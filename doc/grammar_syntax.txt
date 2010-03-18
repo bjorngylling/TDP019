@@ -10,7 +10,7 @@ function_definition ::= identifier arguments "{" statement_list return_stmt? "}"
 
 expression ::= "false" | "true" | number | string | indentifier | function_call | expression binary_operator expression
 
-binary_operator ::= "+" | "-" | "*" | "/" | "" | "" | "=" | "="
+binary_operator ::= "+" | "-" | "*" | "/" | ">" | "<" | ">=" | "<=" | "=="
 
 statement ::= assignment_expression | function_call | if_statement | while_statement
 
