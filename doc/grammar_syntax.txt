@@ -2,22 +2,32 @@ return_stmt ::= "return" expression
 
 assignment_expression ::= identifier = expression
 
-arguments ::= [ [expression , ] expression ]*
+arguments ::= "(" [ [expression , ]* expression ]? ")"
 
 function_call ::= identifier arguments
 
-function_definition ::= identifier arguments "{" statement_list return_stmt? "}"
+function_def ::= identifier arguments "{" statement_list return_stmt? "}"
 
-expression ::= "false" | "true" | number | string | indentifier | function_call | expression binary_operator expression
+expression ::= [ "false" | 
+							 "true" | 
+							 number | 
+							 string | 
+							 indentifier | 
+							 function_call | 
+							 expression ] binary_operator expression
 
 binary_operator ::= "+" | "-" | "*" | "/" | ">" | "<" | ">=" | "<=" | "=="
 
-statement ::= assignment_expression | function_call | if_statement | while_statement
+statement ::= assignment_expression | 
+							function_call | 
+							if_statement | 
+							while_statement |
+							function_def
 
 statement_terminator ::= "\n" | ";"
 
-statement_list ::= [statement statement_terminator]+
+statement_list ::= [ statement statement_terminator ]+
 
 if_statement ::= "if" "(" expression ")" "{" statement_list "}"
 
-while_statement ::= "while" "(" expression ")" { statement_list }
+while_statement ::= "while" "(" expression ")" "{" statement_list "}"
