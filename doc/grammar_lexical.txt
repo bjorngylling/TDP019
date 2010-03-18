@@ -18,4 +18,4 @@ identifier ::= [letter | "_"] [letter | digit | "_"]*
 
 end_line_comment ::= ["//" | "#"] anything "\n"
 
-string ::= '"' anything except `"´ '"' | "'" anything except `'´ "'"
+string ::= '"' anything except " '"' | "'" anything except ' "'"
