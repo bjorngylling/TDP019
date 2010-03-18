@@ -1,0 +1,21 @@
+digit ::= "0"..."9"
+
+nonzerodigit ::= "1"..."9"
+
+integer ::= nonzerodigit digit* | "0"
+
+float ::= [integer | "0"] . digit+
+
+number ::= integer | float
+
+letter ::= lowercase | uppercase
+
+lowercase ::= "a"..."z"
+
+uppercase ::= "A"..."Z"
+
+identifier ::= [letter | "_"] [letter | digit | "_"]*
+
+end_line_comment ::= ["//" | "#"] anything "\n"
+
+string ::= '"' anything except `"´ '"' | "'" anything except `'´ "'"
