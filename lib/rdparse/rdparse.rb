@@ -243,16 +243,16 @@ class Dunder
       end
       
       rule :statement_terminator do
-      	match(';')
-      	match("\n")
-    	end
+        match(';')
+        match("\n")
+      end
       
       rule :statement do 
-      	match(:assignment_expression)
-      	match(:function_call)
-      	match(:if_statement)
-      	match(:while_statement)
-      	match(:function_def)
+        match(:assignment_expression)
+        match(:function_call)
+        match(:if_statement)
+        match(:while_statement)
+        match(:function_def)
       end
 
       rule :assignment_expression do
@@ -264,47 +264,47 @@ class Dunder
       end
       
       rule :arguments do
-      	match('(', :expression_list, ')')
-    	end
-      	
-			rule :expression_list do
-				match(:expression_list, ',', :expression)
-				match(:expression)
-			end
-			
-			rule :expression do
-				match('true')
-				match('false')
-				match(:number)
-				match(:string)
-				match(:indetifier)
-				match(:function_call)
-				match(:expression, :binary_operator, :expression)
-			end
-			
-			rule :number do
-				match(:integer)
-				match(:float)
-			end
-			
-			rule :integer do
-				match(:non_zero_digit, :digits)
-				match('0')
-			end
-			
-			rule :non_zero_digit do
-				match("1-9")
-			end
-			
-			rule :digits do
-				match(:digits, :digit)
-				match(:digit)
-			end
-			
-			rule :digit do
-				match("0-9")
-			end
-			
+        match('(', :expression_list, ')')
+      end
+        
+      rule :expression_list do
+        match(:expression_list, ',', :expression)
+        match(:expression)
+      end
+      
+      rule :expression do
+        match('true')
+        match('false')
+        match(:number)
+        match(:string)
+        match(:indetifier)
+        match(:function_call)
+        match(:expression, :binary_operator, :expression)
+      end
+      
+      rule :number do
+        match(:integer)
+        match(:float)
+      end
+      
+      rule :integer do
+        match(:non_zero_digit, :digits)
+        match('0')
+      end
+      
+      rule :non_zero_digit do
+        match("1-9")
+      end
+      
+      rule :digits do
+        match(:digits, :digit)
+        match(:digit)
+      end
+      
+      rule :digit do
+        match("0-9")
+      end
+      
     end
   end
 
