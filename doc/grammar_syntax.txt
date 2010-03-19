@@ -1,6 +1,14 @@
+non_zero_digit ::= "1"..."9"
+
+integer ::= non_zero_digit digit* | "0"
+
+float ::= [ integer ] . digit+
+
+number ::= integer | float
+
 return_stmt ::= "return" expression
 
-assignment_expression ::= identifier = expression
+assignment_expression ::= identifier "=" expression
 
 arguments ::= "(" [ [expression , ]* expression ]? ")"
 
@@ -8,13 +16,13 @@ function_call ::= identifier arguments
 
 function_def ::= identifier arguments "{" statement_list return_stmt? "}"
 
-expression ::= [ "false" | 
+expression ::= "false" | 
 							 "true" | 
 							 number | 
 							 string | 
 							 indentifier | 
 							 function_call | 
-							 expression ] binary_operator expression
+							 expression binary_operator expression
 
 binary_operator ::= "+" | "-" | "*" | "/" | ">" | "<" | ">=" | "<=" | "=="
 
