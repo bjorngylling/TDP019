@@ -1,4 +1,9 @@
-require "lib/rdparse/dunder_parse.rb"
+require "lib/dunder/parse.rb"
 
-d = Dunder::Parser.new
-
+module Dunder
+	
+	# code to evaluate passed file
+	# a flag to start a interactive interpreter
+	# a flag to check version
+  
+end
