@@ -56,5 +56,21 @@ class DunderNodesTest < Test::Unit::TestCase
     @node.lh, @node.rh = -33, 0
     assert_equal 0, @node.eval
   end
+  
+  def test_division
+    # Make sure we made a class and that both right hand and left hand are nil
+    assert_instance_of Dunder::Nodes::Division, @node
+    assert_nil @node.lh and @node.rh
+    
+    # Commence calculations!
+    @node.lh, @node.rh = 8, 2
+    assert_equal 4, @node.eval
+    
+    @node.lh, @node.rh = 10, -2
+    assert_equal -5, @node.eval
+    
+    @node.lh, @node.rh = -33, 1
+    assert_equal -33, @node.eval
+  end
     
 end

@@ -33,5 +33,13 @@ module Dunder
       end
     end
     
+    class Division < Node
+      attr_accessor :lh, :rh
+      
+      def eval()
+        @lh / @rh
+      end
+    end
+    
   end
 end

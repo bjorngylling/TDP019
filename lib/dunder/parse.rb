@@ -52,8 +52,7 @@ module Dunder
         end
           
         rule :expression do
-          # dirty hack to allow calculations, should return a node instead
-          match(:expression, :binary_operator, :expression) { |rh, op, lh| op.lh, op.rh = lh, rh; op }
+          match(:expression, :binary_operator, :expression) { |lh, op, rh| op.lh, op.rh = lh, rh; op }
           match('true') { true }
           match('false') { false }
           match(:string) { |a| a }
@@ -64,9 +63,9 @@ module Dunder
         
         rule :binary_operator do
           match('+') { Dunder::Nodes::Addition.new }
-          match('-') { "-" }
-          match('*') { "*" }
-          match('/') { "/" }
+          match('-') { Dunder::Nodes::Subtraction.new }
+          match('*') { Dunder::Nodes::Multiplication.new }
+          match('/') { Dunder::Nodes::Division.new }
         end
         
         rule :identifier do

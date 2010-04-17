@@ -14,6 +14,18 @@ class DunderParserTest < Test::Unit::TestCase
     assert_equal 6, @d_parser.parse("4+2").eval
   end
   
+  def test_subtraction
+    assert_equal 6, @d_parser.parse("8-2").eval
+  end
+  
+  def test_multiplication
+    assert_equal 16, @d_parser.parse("8*2").eval
+  end
+  
+  def test_division
+    assert_equal 4, @d_parser.parse("8/2").eval
+  end
+  
   def test_whitespace
     assert_equal 6, @d_parser.parse("4 +2").eval
     assert_equal 6, @d_parser.parse("4	+ 2").eval
