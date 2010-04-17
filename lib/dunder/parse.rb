@@ -8,19 +8,10 @@ module Dunder
     
     def initialize
       @dunder_parser = Rdparse::Parser.new("dunder") do
-        # Remove whitespace
-      	token(/[ \t]+/)
-      	
-      	
+        # Remove whitespace, except newlines since they are statement_terminators
+        token(/[ \t]+/)
+        
         token(/\w+/) { |t| t }
-        
-        # Float, has to be before integer else we get two ints
-        #token(/\d+\.\d+/) {|m| m.to_f }
-        
-        # Integer
-        #token(/\d+/) {|m| m.to_i }
-        
-        
         
         token(/./) { |t| t }
         
@@ -59,9 +50,10 @@ module Dunder
           match(:expression_list, ',', :expression)
           match(:expression)
         end
-        	
+          
         rule :expression do
-          match(:expression, :binary_operator, :expression) { |a, b, c| a.send b, c }
+          # dirty hack to allow calculations, should return a node instead
+          match(:expression, :binary_operator, :expression) { |rh, op, lh| op.lh, op.rh = lh, rh; op }
           match('true') { true }
           match('false') { false }
           match(:string) { |a| a }
@@ -71,10 +63,10 @@ module Dunder
         end
         
         rule :binary_operator do
-        	match('+') { "+" }
-        	match('-') { "-" }
-        	match('*') { "*" }
-        	match('/') { "/" }
+          match('+') { Dunder::Nodes::Addition.new }
+          match('-') { "-" }
+          match('*') { "*" }
+          match('/') { "/" }
         end
         
         rule :identifier do
@@ -87,7 +79,7 @@ module Dunder
         end
         
         rule :integer do
-        	match(:digits) { |a| a }
+          match(:digits) { |a| a }
           #match(:non_zero_digit, :digits) { |a, b| a << b; puts "\nintified\n" }
         end
         
@@ -104,13 +96,13 @@ module Dunder
           match(/[0-9]/) { |a| a }
         end
         
-			end
-			
-			#log false
+      end
+      
+      log false
     end
     
     def parse(code)
-    	@dunder_parser.parse(code)
+      @dunder_parser.parse(code)
     end
   
     def log(state = true)

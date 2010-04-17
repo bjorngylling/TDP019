@@ -1,6 +1,4 @@
-require 'lib/dunder.rb'
-
-require 'test/unit'
+require 'test/test_helpers.rb'
 
 class DunderParserTest < Test::Unit::TestCase
   
@@ -13,20 +11,16 @@ class DunderParserTest < Test::Unit::TestCase
   end
   
   def test_addition
-  	assert_equal 6, @d_parser.parse("4+2")
-	end
-	
-	def test_whitespace
-  	assert_equal 6, @d_parser.parse("4 +2")
-  	assert_equal 6, @d_parser.parse("4	+ 2")
-	end
-	
-	def test_statement_list
-		assert_equal 6, @d_parser.parse("1*4\n4 + 2")
-	end
-
-	# def test_variable_assignment
-	#   assert_equal 12, @d_parser.parse("hej = 12")
-	# end
+    assert_equal 6, @d_parser.parse("4+2").eval
+  end
+  
+  def test_whitespace
+    assert_equal 6, @d_parser.parse("4 +2").eval
+    assert_equal 6, @d_parser.parse("4	+ 2").eval
+  end
+  
+  def test_statement_list
+    assert_equal 6, @d_parser.parse("1*4\n4 + 2").eval
+  end
     
 end
