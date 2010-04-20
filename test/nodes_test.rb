@@ -1,20 +1,33 @@
 require 'test/test_helpers.rb'
 
+##
+# The following tests are set up so that the last word in the test name will be
+# used as the name of the Node that @node will be. So in a test named
+# test_addition, @node.class will be Dunder::Nodes::Addition.
+# It also works for more descriptive testnames as long as the last word
+# is the Node-name. Ex test_a_very_complicated_ifstatement would @node.class be
+# Dunder::Nodes::IfStatement
+
 class DunderNodesTest < Test::Unit::TestCase
 
   def setup
-    @node = current_node(method_name)
+    @node = create_node(method_name)
   end
   # 
   # def teardown
   # end
   
+  def test_ifstatement
+    assert_instance_of Dunder::Nodes::IfStatement, @node
+    assert_nil @node.condition and @node.code_block
+  end
+  
   def test_addition    
-    # Make sure we made a class and that both right hand and left hand are nil
+    # Make sure we have correct class and that both right hand and left hand are nil
     assert_instance_of Dunder::Nodes::Addition, @node
     assert_nil @node.lh and @node.rh
     
-    # Commence calculations!
+    # Can we calculations!
     @node.lh, @node.rh = 2, 4
     assert_equal 6, @node.eval
     
@@ -25,12 +38,10 @@ class DunderNodesTest < Test::Unit::TestCase
     assert_equal -11, @node.eval
   end
   
-  def test_subtraction 
-    # Make sure we made a class and that both right hand and left hand are nil
+  def test_subtraction
     assert_instance_of Dunder::Nodes::Subtraction, @node
     assert_nil @node.lh and @node.rh
     
-    # Commence calculations!
     @node.lh, @node.rh = 8, 2
     assert_equal 6, @node.eval
     
@@ -42,11 +53,9 @@ class DunderNodesTest < Test::Unit::TestCase
   end
   
   def test_multiplication
-    # Make sure we made a class and that both right hand and left hand are nil
     assert_instance_of Dunder::Nodes::Multiplication, @node
     assert_nil @node.lh and @node.rh
     
-    # Commence calculations!
     @node.lh, @node.rh = 8, 2
     assert_equal 16, @node.eval
     
@@ -58,11 +67,9 @@ class DunderNodesTest < Test::Unit::TestCase
   end
   
   def test_division
-    # Make sure we made a class and that both right hand and left hand are nil
     assert_instance_of Dunder::Nodes::Division, @node
     assert_nil @node.lh and @node.rh
     
-    # Commence calculations!
     @node.lh, @node.rh = 8, 2
     assert_equal 4, @node.eval
     
@@ -72,5 +79,17 @@ class DunderNodesTest < Test::Unit::TestCase
     @node.lh, @node.rh = -33, 1
     assert_equal -33, @node.eval
   end
+  
+  def test_advanced_addition
+    assert_instance_of Dunder::Nodes::Addition, @node
+    assert_nil @node.lh and @node.rh
+    
+    # Create another Addition Node and use it as the left hand
+    sub_addition = create_node "addition"
+    sub_addition.lh, sub_addition.rh = 5, 3
+    @node.lh, @node.rh = sub_addition, 10
+    assert_equal 18, @node.eval
+  end
+    
     
 end
