@@ -45,5 +45,22 @@ class DunderParserTest < Test::Unit::TestCase
     assert_equal 48, @d_parser.parse("1+10*10/2-3").eval
   end
 
+  def test_zero_fill
+    assert_equal 12, @d_parser.parse("00001*0001+0000000011").eval
+  end
+
+  def test_variable_assignment
+    assert_equal "hej", @d_parser.parse("var = 'hej'").eval
+    assert_equal 100, @d_parser.parse("var = 100").eval
+    assert_equal 1000, @d_parser.parse("var = 100 * 10").eval
+  end
+
+  def test_variable_reading
+    assert_equal 5, @d_parser.parse("var = 5").eval
+    assert_equal 5, @d_parser.parse("var").eval
+    assert_equal 1000, @d_parser.parse("var = 100 * 10").eval
+    assert_equal 1000, @d_parser.parse("var").eval
+  end
+
 end
 

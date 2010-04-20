@@ -36,10 +36,6 @@ module Dunder
           match(:expression) { |a| a }
         end
 
-        rule :assignment_expression do
-          match(:identifier, '=', :expression)
-        end
-
         rule :function_call do
           match(:identifier, :arguments)
         end
@@ -54,14 +50,15 @@ module Dunder
         end
 
         rule :expression do
-#          match(:expression, :binary_operator, :expression) { |lh, op, rh| op.lh, op.rh = lh, rh; op }
           match(:a_expr) { |a| a }
           match('true') { true }
           match('false') { false }
           match(:string) { |a| a }
-          match(:identifier) { |a| a }
+          match(:identifier) do |name|
+            Dunder::Nodes::Variable.new name
+          end
           match(:function_call)
-          #match(:number) { |a| a }
+          match(:number) { |a| a }
         end
 
         rule :a_expr do
@@ -98,8 +95,15 @@ module Dunder
           match(:number) { |a| a }
         end
 
+        rule :assignment_expression do
+          match(:identifier, '=', :expression) do |identifier, _, value|
+            Dunder::Nodes::VariableAssignment.new identifier, value
+          end
+        end
+
         rule :identifier do
-          #match()
+          match(/[a-z][A-Za-z0-9_]*/) { |a| a }
+          match(/_[A-Za-z0-9_]+/) { |a| a }
         end
 
         rule :number do
@@ -109,7 +113,6 @@ module Dunder
 
         rule :integer do
           match(:digits) { |a| a }
-          #match(:non_zero_digit, :digits) { |a, b| a << b; puts "\nintified\n" }
         end
 
         rule :non_zero_digit do
@@ -123,6 +126,15 @@ module Dunder
 
         rule :digit do
           match(/[0-9]/) { |a| a }
+        end
+
+        rule :lowercase do
+          match(/[a-z]+/) { |a| a }
+        end
+
+        rule :string do
+          match("'", /[^']/, "'") { |_, a, _| a }
+          match('"', /[^"]/, '"') { |_, a, _| a }
         end
 
       end

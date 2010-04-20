@@ -157,6 +157,7 @@ module Rdparse
           end # if
         end # raise
       end # until
+      #puts @tokens #for debugging
     end
 
     def parse(string)
