@@ -16,19 +16,29 @@ function_call ::= identifier arguments
 
 function_def ::= identifier arguments "{" statement_list return_stmt? "}"
 
-expression ::= "false" | 
-							 "true" | 
-							 number | 
-							 string | 
-							 indentifier | 
-							 function_call | 
-							 expression binary_operator expression
+expression ::= "false" |
+				       "true" |
+				       number |
+				       string |
+				       indentifier |
+				       function_call |
+				       a_expr
 
-binary_operator ::= "+" | "-" | "*" | "/" | ">" | "<" | ">=" | "<=" | "=="
+a_expr ::= m_expr |
+           a_expr "+" m_expr |
+           a_expr "-" m_expr
 
-statement ::= assignment_expression | 
-							function_call | 
-							if_statement | 
+m_expr ::= u_expr |
+           m_expr "*" u_expr |
+           m_expr "/" u_expr
+
+u_expr ::= number |
+           "-" u_expr |
+           "+" u_expr
+
+statement ::= assignment_expression |
+							function_call |
+							if_statement |
 							while_statement |
 							function_def
 
@@ -39,3 +49,4 @@ statement_list ::= [ statement statement_terminator ]+
 if_statement ::= "if" "(" expression ")" "{" statement_list "}"
 
 while_statement ::= "while" "(" expression ")" "{" statement_list "}"
+
