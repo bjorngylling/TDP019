@@ -6,8 +6,10 @@ lowercase ::= "a"..."z"
 
 uppercase ::= "A"..."Z"
 
-identifier ::= [ lowercase | "_" ] [ letter | digit | "_" ]*
+identifier ::= lowercase [ letter | digit | "_" ]* |
+               "_" [ letter | digit | "_" ]+
 
 end_line_comment ::= [ "//" | "#" ] anything "\n"
 
 string ::= '"' anything except " '"' | "'" anything except ' "'"
+

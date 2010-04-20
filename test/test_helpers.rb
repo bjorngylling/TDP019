@@ -2,6 +2,16 @@ require 'lib/dunder.rb'
 
 require 'test/unit'
 
+
+class Dunder::Nodes::Node
+  def self.sub_classes
+    sub_classes = ObjectSpace.enum_for(:each_object, class << self; self; end).to_a
+    sub_classes.delete(self)
+    
+    sub_classes
+  end
+end
+
 ##
 # Takes in name of the current test method and returns
 # a Node that is supposed to be tested by that method.

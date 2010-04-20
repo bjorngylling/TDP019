@@ -1,62 +1,79 @@
 module Dunder
   module Nodes
-    
+
     class Node
       
-      def self.sub_classes
-        sub_classes = ObjectSpace.enum_for(:each_object, class << self; self; end).to_a
-        sub_classes.delete(self)
-        
-        sub_classes
-      end
-      
+      @@global_scope = {}
+
       def is_node?
         true
       end
-      
+
     end
-    
+
     class Addition < Node
       attr_accessor :lh, :rh
-      
+
       def eval()
         (@lh.is_node? ? @lh.eval : @lh) + (@rh.is_node? ? @rh.eval : @rh)
       end
     end
-    
+
     class Subtraction < Node
       attr_accessor :lh, :rh
-      
+
       def eval()
-        @lh - @rh
+        (@lh.is_node? ? @lh.eval : @lh) - (@rh.is_node? ? @rh.eval : @rh)
       end
     end
-    
+
     class Multiplication < Node
       attr_accessor :lh, :rh
-      
+
       def eval()
-        @lh * @rh
+        (@lh.is_node? ? @lh.eval : @lh) * (@rh.is_node? ? @rh.eval : @rh)
       end
     end
-    
+
     class Division < Node
       attr_accessor :lh, :rh
-      
+
       def eval()
-        @lh / @rh
+        (@lh.is_node? ? @lh.eval : @lh) / (@rh.is_node? ? @rh.eval : @rh)
       end
     end
-    
-    class IfStatement < Node
-      attr_accessor :condition, :code_block
-      
-      def eval()
-        if @condition.eval()
-          return @code_block.eval()
+
+    class VariableAssignment < Node
+      def initialize(name, value)
+        @name = name
+        @value = value
+      end
+
+      def eval(scope = @@global_scope)
+        scope[@name.to_sym] = @value.is_node? ? @value.eval : @value
+      end
+    end
+
+    class Variable < Node
+      attr_accessor :name, :scope
+
+      def initialize(name = nil)
+        @name = name
+      end
+
+      def eval(scope = @@global_scope)
+        if scope.include?(@name.to_sym)
+          return scope[@name.to_sym]
+        else
+          if scope.has_key? "PARENTSCOPE"
+            return eval(scope["PARENTSCOPE"])
+          else
+            return false
+          end
         end
       end
     end
     
   end
 end
+
