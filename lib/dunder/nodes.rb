@@ -13,12 +13,15 @@ module Dunder
 
     class StatementList < Node
       def initialize(statement)
-        @statement_list = [statement]
+        if statement.kind_of? Array
+          @statement_list = statement
+        else
+          @statement_list = [statement]
+        end
       end
 
-      def <<(statement_list)
-        @statement_list + statement_list.list
-        self
+      def +(statement_list)
+        self.class.new @statement_list + statement_list.list
       end
 
       def list
@@ -27,7 +30,7 @@ module Dunder
 
       def eval()
         result = nil
-        @statement_list.each do |stmt|
+        @statement_list.reverse.each do |stmt|
           result = stmt.eval
         end
 

@@ -19,7 +19,7 @@ module Dunder
 
         start :statement_list do
           match(:statement, :statement_terminator, :statement_list) do |a, _, b|
-            b ? b << a : a
+            b = b + a
           end
           match(:statement, :statement_terminator)
           match(:statement)

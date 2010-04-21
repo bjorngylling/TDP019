@@ -79,8 +79,10 @@ class DunderParserTest < Test::Unit::TestCase
   end
 
   def test_math_with_variables
-    code = "var = 100 * 10;x = 12; var"
-    assert_equal 10, @d_parser.parse(code).eval
+    code = "var = 100 * 10
+            x = 12
+            var = var + x"
+    assert_equal 1012, @d_parser.parse(code).eval
   end
 
 end

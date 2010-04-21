@@ -67,6 +67,21 @@ class DunderNodesTest < Test::Unit::TestCase
     assert_equal "hej", create_node(method_name, "myVar").eval(scope)
     assert_equal "yes", create_node(method_name, "another_variable").eval(scope)
   end
+  
+  def test_statementlist
+    # Create a bunch of statements
+    stmt_1 = create_node "addition", @int_5, @int_10
+    stmt_2 = create_node "addition", @int_5, @int_5
+    stmt_3 = create_node "multiplication", @int_5, @int_10
+    
+    stmt_list_1 = create_node method_name, stmt_1
+    
+    stmt_list_1 += create_node(method_name, stmt_2)
+    assert_equal 2, stmt_list_1.list.length
+    
+    stmt_list_1 += create_node(method_name, stmt_3)
+    assert_equal 3, stmt_list_1.list.length
+  end
 
 end
 
