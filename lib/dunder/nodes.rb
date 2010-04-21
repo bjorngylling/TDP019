@@ -54,7 +54,7 @@ module Dunder
         @value
       end
 
-      def negative
+      def negative!
         @value = -@value
       end
     end
@@ -68,7 +68,7 @@ module Dunder
         @value
       end
 
-      def negative
+      def negative!
         @value = -@value
       end
     end
@@ -84,8 +84,6 @@ module Dunder
     end
 
     class Addition < Node
-      attr_accessor :lh, :rh
-
       def initialize(lh, rh)
         @lh, @rh = lh, rh
       end
@@ -133,22 +131,20 @@ module Dunder
 
       def eval(scope = @@global_scope)
         value = @node.is_node? ? @node.eval : @node
-
+        
         scope[@name] = value unless assign(scope, value)
 
         return value
       end
 
       def assign(scope, value)
-        if scope.include?(@name.to_sym)
+        if scope.has_key? @name
           scope[@name] = @node.is_node? ? @node.eval : @node
           return true
+        elsif scope.has_key? "PARENTSCOPE"
+          return assign(scope["PARENTSCOPE"], value)
         else
-          if scope.has_key? "PARENTSCOPE"
-            return eval(scope["PARENTSCOPE"])
-          else
-            return false
-          end
+          return false
         end
       end
 
@@ -158,13 +154,12 @@ module Dunder
       attr_accessor :name, :scope
 
       def initialize(name)
-        @name = name
+        @name = name.to_sym
       end
 
       def eval(scope = @@global_scope)
-        p scope
-        if scope.include?(@name.to_sym)
-          return scope[@name.to_sym]
+        if scope.include?(@name)
+          return scope[@name]
         else
           if scope.has_key? "PARENTSCOPE"
             return eval(scope["PARENTSCOPE"])

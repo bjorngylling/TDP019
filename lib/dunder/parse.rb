@@ -85,7 +85,7 @@ module Dunder
 
         rule :u_expr do
           match("+", :number)
-          match("-", :number) { |_, a| a.negative }
+          match("-", :number) { |_, a| a.negative! }
           match(:number)
           match(:identifier) do |name|
             Dunder::Nodes::Variable.new name

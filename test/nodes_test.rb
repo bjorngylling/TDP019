@@ -1,97 +1,63 @@
-require 'test/test_helpers.rb'
-
-##
-# The following tests are set up so that the last word in the test name will be
-# used as the name of the Node that @node will be. So in a test named
-# test_addition, @node.class will be Dunder::Nodes::Addition.
-# It also works for more descriptive testnames as long as the last word
-# is the Node-name. Ex test_a_very_complicated_ifstatement would @node.class be
-# Dunder::Nodes::IfStatement
+require "test/test_helpers.rb"
 
 class DunderNodesTest < Test::Unit::TestCase
-
-  def setup
-    @node = create_node(method_name)
-  end
-
-  # def teardown
-  # end
   
-  def test_addition    
-    # Make sure we have correct class and that both right hand and left hand are nil
-    assert_instance_of Dunder::Nodes::Addition, @node
-    assert_nil @node.lh and @node.rh
-    
-    # Run calculationtests
-    @node.lh, @node.rh = 2, 4
-    assert_equal 6, @node.eval
-
-    @node.lh, @node.rh = -3, 4
-    assert_equal 1, @node.eval
-
-    @node.lh, @node.rh = 33, -44
-    assert_equal -11, @node.eval
+  def setup
+    @int_10 = create_node "dinteger", "10"
+    @int_5 = create_node "dinteger", "5"
+  end
+  
+  def test_addition
+    assert_equal 15, create_node(method_name, @int_10, @int_5).eval
   end
   
   def test_subtraction
-    assert_instance_of Dunder::Nodes::Subtraction, @node
-    assert_nil @node.lh and @node.rh
-    
-    @node.lh, @node.rh = 8, 2
-    assert_equal 6, @node.eval
-
-    @node.lh, @node.rh = 3, -4
-    assert_equal 7, @node.eval
-
-    @node.lh, @node.rh = -33, 5
-    assert_equal -38, @node.eval
+    assert_equal 5, create_node(method_name, @int_10, @int_5).eval
   end
 
   def test_multiplication
-    assert_instance_of Dunder::Nodes::Multiplication, @node
-    assert_nil @node.lh and @node.rh
-    
-    @node.lh, @node.rh = 8, 2
-    assert_equal 16, @node.eval
-
-    @node.lh, @node.rh = 3, -4
-    assert_equal -12, @node.eval
-
-    @node.lh, @node.rh = -33, 0
-    assert_equal 0, @node.eval
+    assert_equal 50, create_node(method_name, @int_10, @int_5).eval
   end
 
   def test_division
-    assert_instance_of Dunder::Nodes::Division, @node
-    assert_nil @node.lh and @node.rh
-    
-    @node.lh, @node.rh = 8, 2
-    assert_equal 4, @node.eval
-
-    @node.lh, @node.rh = 10, -2
-    assert_equal -5, @node.eval
-
-    @node.lh, @node.rh = -33, 1
-    assert_equal -33, @node.eval
+    assert_equal 2, create_node(method_name, @int_10, @int_5).eval
   end
   
-  def test_advanced_addition
-    assert_instance_of Dunder::Nodes::Addition, @node
-    assert_nil @node.lh and @node.rh
-    
+  def test_advanced_addition    
     # Create another Addition Node and use it as the left hand
-    sub_addition = create_node "addition"
-    sub_addition.lh, sub_addition.rh = 5, 3
-    @node.lh, @node.rh = sub_addition, 10
-    assert_equal 18, @node.eval
-  end
-
-  def test_variable
-    scope = {:var => 12}
-
-    @node.name = "var"
-    assert_equal 12, @node.eval(scope)
+    sub_addition = create_node "addition", @int_5, @int_5
+    
+    assert_equal 20, create_node(method_name, sub_addition, @int_10).eval
   end
   
+  def test_variableassignment
+    scope = {} # Empty variable scope to store our test-variable
+    
+    # Make the assignment
+    create_node(method_name, "myVar", @int_10).eval(scope)
+    
+    assert_equal 10, scope[:myVar] 
+  end
+  
+  def test_scoped_variableassignment
+    global_scope = {:another_variable => "yes"}
+    scope = {"PARENTSCOPE" => global_scope} # Empty variable scope to store our test-variable
+    
+    # Make the assignment
+    create_node(method_name, "myVar", @int_10).eval(scope)
+    assert_equal 10, scope[:myVar]
+    assert_nil global_scope[:myVar] # Should not pollute parent-scope
+    
+    # This time it should find "another_variable" in the parent-scope and overwrite it
+    create_node(method_name, "another_variable", @int_5).eval(scope)
+    assert_equal 5, global_scope[:another_variable]
+    assert_nil scope[:another_variable] # Should not pollute other scopes
+  end
+  
+  def test_variable
+    scope = {:myVar => "hej"}
+    
+  end
+
 end
 
