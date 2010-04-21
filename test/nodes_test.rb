@@ -39,7 +39,7 @@ class DunderNodesTest < Test::Unit::TestCase
     assert_equal 10, scope[:myVar] 
   end
   
-  def test_scoped_variableassignment
+  def test_scope_variableassignment
     global_scope = {:another_variable => "yes"}
     scope = {"PARENTSCOPE" => global_scope} # Empty variable scope to store our test-variable
     
@@ -57,6 +57,15 @@ class DunderNodesTest < Test::Unit::TestCase
   def test_variable
     scope = {:myVar => "hej"}
     
+    assert_equal "hej", create_node(method_name, "myVar").eval(scope)
+  end
+  
+  def test_scope_variable
+    global_scope = {:another_variable => "yes", :myVar => "goodbye"}
+    scope = {"PARENTSCOPE" => global_scope, :myVar => "hej"}
+    
+    assert_equal "hej", create_node(method_name, "myVar").eval(scope)
+    assert_equal "yes", create_node(method_name, "another_variable").eval(scope)
   end
 
 end
