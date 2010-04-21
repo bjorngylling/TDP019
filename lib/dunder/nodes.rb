@@ -13,8 +13,7 @@ module Dunder
 
     class StatementList < Node
       def initialize(statement)
-        @statement_list = []
-        @statement_list << statement
+        @statement_list = [statement]
       end
 
       def <<(statement_list)
@@ -36,7 +35,7 @@ module Dunder
       end
     end
 
-    class DString
+    class DString < Node
       def initialize(value)
         @value = value
       end
@@ -46,27 +45,35 @@ module Dunder
       end
     end
 
-    class DInteger
+    class DInteger < Node
       def initialize(value)
-        @value = value
+        @value = value.to_i
       end
 
       def eval()
         @value
       end
+
+      def negative
+        @value = -@value
+      end
     end
 
-    class DFloat
+    class DFloat < Node
       def initialize(value)
-        @value = value
+        @value = value.to_f
       end
 
       def eval()
         @value
       end
+
+      def negative
+        @value = -@value
+      end
     end
 
-    class DBoolean
+    class DBoolean < Node
       def initialize(value)
         @value = value
       end
@@ -89,8 +96,6 @@ module Dunder
     end
 
     class Subtraction < Node
-      attr_accessor :lh, :rh
-
       def initialize(lh, rh)
         @lh, @rh = lh, rh
       end
@@ -101,8 +106,6 @@ module Dunder
     end
 
     class Multiplication < Node
-      attr_accessor :lh, :rh
-
       def initialize(lh, rh)
         @lh, @rh = lh, rh
       end
@@ -113,8 +116,6 @@ module Dunder
     end
 
     class Division < Node
-      attr_accessor :lh, :rh
-
       def initialize(lh, rh)
         @lh, @rh = lh, rh
       end
@@ -131,18 +132,37 @@ module Dunder
       end
 
       def eval(scope = @@global_scope)
-        scope[@name] = @node.is_node? ? @node.eval : @node
+        value = @node.is_node? ? @node.eval : @node
+
+        scope[@name] = value unless assign(scope, value)
+
+        return value
       end
+
+      def assign(scope, value)
+        if scope.include?(@name.to_sym)
+          scope[@name] = @node.is_node? ? @node.eval : @node
+          return true
+        else
+          if scope.has_key? "PARENTSCOPE"
+            return eval(scope["PARENTSCOPE"])
+          else
+            return false
+          end
+        end
+      end
+
     end
 
     class Variable < Node
       attr_accessor :name, :scope
 
-      def initialize(name = nil)
+      def initialize(name)
         @name = name
       end
 
       def eval(scope = @@global_scope)
+        p scope
         if scope.include?(@name.to_sym)
           return scope[@name.to_sym]
         else

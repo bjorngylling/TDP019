@@ -85,8 +85,11 @@ module Dunder
 
         rule :u_expr do
           match("+", :number)
-          match("-", :number) { |_, a| -a }
+          match("-", :number) { |_, a| a.negative }
           match(:number)
+          match(:identifier) do |name|
+            Dunder::Nodes::Variable.new name
+          end
         end
 
         rule :assignment_expression do
@@ -101,12 +104,16 @@ module Dunder
         end
 
         rule :number do
-          match(:integer) { |a| a.to_i }
-          match(:float) { |a| a.to_f }
+          match(:integer)
+          match(:float)
         end
 
         rule :integer do
-          match(:digits) { |a| a }
+          match(:digits) { |a| Dunder::Nodes::DInteger.new a }
+        end
+
+        rule :float do
+          match(:digits, ".", :digits) { |a| Dunder::Nodes::DFloat.new a }
         end
 
         rule :non_zero_digit do
@@ -127,8 +134,8 @@ module Dunder
         end
 
         rule :string do
-          match("'", /[^']/, "'") { |_, a, _| a }
-          match('"', /[^"]/, '"') { |_, a, _| a }
+          match("'", /[^']/, "'") { |_, a, _| Dunder::Nodes::DString.new a }
+          match('"', /[^"]/, '"') { |_, a, _| Dunder::Nodes::DString.new a }
         end
 
       end
