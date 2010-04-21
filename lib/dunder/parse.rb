@@ -18,9 +18,11 @@ module Dunder
         token(/./) { |t| t }
 
         start :statement_list do
-          match(:statement, :statement_terminator, :statement_list) { |a, _, b| b }
-          match(:statement, :statement_terminator) { |a, _| a }
-          match(:statement) { |a| a }
+          match(:statement, :statement_terminator, :statement_list) do |a, _, b|
+            b ? b << a : a
+          end
+          match(:statement, :statement_terminator)
+          match(:statement)
         end
 
         rule :statement_terminator do
@@ -29,11 +31,11 @@ module Dunder
         end
 
         rule :statement do
-          match(:assignment_expression) { |a| a }
-          match(:if_statement) { |a| a }
-          match(:while_statement) { |a| a }
-          match(:function_def) { |a| a }
-          match(:expression) { |a| a }
+          match(:assignment_expression) { |a| Dunder::Nodes::StatementList.new a }
+          match(:if_statement) { |a| Dunder::Nodes::StatementList.new a }
+          match(:while_statement) { |a| Dunder::Nodes::StatementList.new a }
+          match(:function_def) { |a| Dunder::Nodes::StatementList.new a }
+          match(:expression) { |a| Dunder::Nodes::StatementList.new a }
         end
 
         rule :function_call do
@@ -50,49 +52,41 @@ module Dunder
         end
 
         rule :expression do
-          match(:a_expr) { |a| a }
+          match(:a_expr)
           match('true') { true }
           match('false') { false }
-          match(:string) { |a| a }
+          match(:string)
           match(:identifier) do |name|
             Dunder::Nodes::Variable.new name
           end
           match(:function_call)
-          match(:number) { |a| a }
+          match(:number)
         end
 
         rule :a_expr do
           match(:a_expr, "+", :m_expr) do | lh, _, rh |
-            op = Dunder::Nodes::Addition.new
-            op.lh, op.rh = lh, rh
-            op
+            Dunder::Nodes::Addition.new lh, rh
           end
           match(:a_expr, "-", :m_expr) do | lh, _, rh |
-            op = Dunder::Nodes::Subtraction.new
-            op.lh, op.rh = lh, rh
-            op
+            op = Dunder::Nodes::Subtraction.new lh, rh
           end
-          match(:m_expr) { |a| a }
+          match(:m_expr)
         end
 
         rule :m_expr do
           match(:m_expr, "*", :u_expr) do | lh, _, rh |
-            op = Dunder::Nodes::Multiplication.new
-            op.lh, op.rh = lh, rh
-            op
+            Dunder::Nodes::Multiplication.new lh, rh
           end
           match(:m_expr, "/", :u_expr) do | lh, _, rh |
-            op = Dunder::Nodes::Division.new
-            op.lh, op.rh = lh, rh
-            op
+            Dunder::Nodes::Division.new lh, rh
           end
           match(:u_expr) { |a| a }
         end
 
         rule :u_expr do
-          match("+", :number) { |a| a }
-          match("-", :number) { |a| -a }
-          match(:number) { |a| a }
+          match("+", :number)
+          match("-", :number) { |_, a| -a }
+          match(:number)
         end
 
         rule :assignment_expression do
