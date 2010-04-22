@@ -30,7 +30,7 @@ module Dunder
 
       def eval()
         result = nil
-        @statement_list.reverse.each do |stmt|
+        @statement_list.each do |stmt|
           result = stmt.eval
         end
 
@@ -78,7 +78,13 @@ module Dunder
 
     class DBoolean < Node
       def initialize(value)
-        @value = value
+        value = value.eval if value.is_node?
+
+        if value == nil || value == 0 || value == false
+          @value = false
+        else
+          @value = true
+        end
       end
 
       def eval()
@@ -126,6 +132,36 @@ module Dunder
       end
     end
 
+    class Comparison < Node
+      def initialize(lh, op, rh)
+        @lh, @rh, @op = lh, rh, op
+      end
+
+      def eval()
+        lh = @lh.eval || @lh
+        rh = @rh.eval || @rh
+
+        lh = "'#{lh}'" if lh.kind_of? String
+        rh = "'#{rh}'" if rh.kind_of? String
+
+        Kernel.eval("#{lh} #{@op} #{rh}")
+      end
+    end
+
+    class IfStatement < Node
+      def initialize(condition, stmt_list, else_stmt_list = nil)
+        @condition, @stmt_list, @else_stmt_list = condition, stmt_list, else_stmt_list
+      end
+
+      def eval()
+        if @condition.eval
+          @stmt_list.eval
+        elsif @else_stmt_list
+          @else_stmt_list.eval
+        end
+      end
+    end
+
     class VariableAssignment < Node
       def initialize(name, node)
         @name = name.to_sym
@@ -134,7 +170,7 @@ module Dunder
 
       def eval(scope = @@global_scope)
         value = @node.is_node? ? @node.eval : @node
-        
+
         scope[@name] = value unless assign(scope, value)
 
         return value
