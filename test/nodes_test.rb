@@ -46,6 +46,13 @@ class DunderNodesTest < Test::Unit::TestCase
     assert_equal false, create_node(method_name, @int_5, "!=", @int_5).eval
   end
 
+  def test_ifstatement
+    stmt_list = create_node("statementlist", create_node("addition", @int_5, @int_5))
+    condition = create_node("dboolean", true)
+
+    assert_equal 10, create_node(method_name, condition, stmt_list).eval
+  end
+
   def test_variableassignment
     scope = {} # Empty variable scope to store our test-variable
 

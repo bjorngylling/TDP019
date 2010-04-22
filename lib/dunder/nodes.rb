@@ -141,7 +141,24 @@ module Dunder
         lh = @lh.eval || @lh
         rh = @rh.eval || @rh
 
+        lh = "'#{lh}'" if lh.kind_of? String
+        rh = "'#{rh}'" if rh.kind_of? String
+
         Kernel.eval("#{lh} #{@op} #{rh}")
+      end
+    end
+
+    class IfStatement < Node
+      def initialize(condition, stmt_list, else_stmt_list = nil)
+        @condition, @stmt_list, @else_stmt_list = condition, stmt_list, else_stmt_list
+      end
+
+      def eval()
+        if @condition.eval
+          @stmt_list.eval
+        elsif @else_stmt_list
+          @else_stmt_list.eval
+        end
       end
     end
 

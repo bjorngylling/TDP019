@@ -13,6 +13,7 @@ module Dunder
 
         token(/[\n;]/) { |t| t }
 
+
         token(/\w+/) { |t| t }
 
         token(/==|<=|>=|!=/) { |t| t }
@@ -28,16 +29,30 @@ module Dunder
         end
 
         rule :statement_terminator do
-          match(";")
           match("\n")
+          match(";")
         end
 
         rule :statement do
-          match(:assignment_expression) { |a| Dunder::Nodes::StatementList.new a }
+          match(:compound_statement) { |a| Dunder::Nodes::StatementList.new a }
           match(:expression) { |a| Dunder::Nodes::StatementList.new a }
-          match(:if_statement) { |a| Dunder::Nodes::StatementList.new a }
-          match(:while_statement) { |a| Dunder::Nodes::StatementList.new a }
-          match(:function_def) { |a| Dunder::Nodes::StatementList.new a }
+        end
+
+        rule :compound_statement do
+          match(:if_statement)
+          match(:while_statement)
+          match(:function_def)
+        end
+
+        rule :if_statement do
+          match("if", "(", :expression, ")", /\n?\{/, :statement_list, /\}\n?/,
+                "else", /\n?\{/, :statement_list, /\}\n?/) do
+                  |_, _, condition, _, _, stmt_list, _, _, _, else_stmt_list, _|
+                  Dunder::Nodes::IfStatement.new condition, stmt_list, else_stmt_list
+          end
+          match("if", "(", :expression, ")", /\n?\{/, :statement_list, /\}\n?/) do |_, _, condition, _, _, stmt_list, _|
+            Dunder::Nodes::IfStatement.new condition, stmt_list
+          end
         end
 
         rule :function_call do
@@ -54,6 +69,7 @@ module Dunder
         end
 
         rule :expression do
+          match(:assignment_expression) { |a| Dunder::Nodes::StatementList.new a }
           match(:comparison)
         end
 
