@@ -15,11 +15,13 @@ module Dunder
 
         token(/\w+/) { |t| t }
 
+        token(/==|<=|>=|!=/) { |t| t }
+
         token(/./) { |t| t }
 
         start :statement_list do
           match(:statement, :statement_terminator, :statement_list) do |a, _, b|
-            b = b + a
+            b = a + b
           end
           match(:statement, :statement_terminator)
           match(:statement)
@@ -32,10 +34,10 @@ module Dunder
 
         rule :statement do
           match(:assignment_expression) { |a| Dunder::Nodes::StatementList.new a }
+          match(:expression) { |a| Dunder::Nodes::StatementList.new a }
           match(:if_statement) { |a| Dunder::Nodes::StatementList.new a }
           match(:while_statement) { |a| Dunder::Nodes::StatementList.new a }
           match(:function_def) { |a| Dunder::Nodes::StatementList.new a }
-          match(:expression) { |a| Dunder::Nodes::StatementList.new a }
         end
 
         rule :function_call do
@@ -52,15 +54,14 @@ module Dunder
         end
 
         rule :expression do
-          match(:a_expr)
-          match('true') { true }
-          match('false') { false }
-          match(:string)
-          match(:identifier) do |name|
-            Dunder::Nodes::Variable.new name
+          match(:comparison)
+        end
+
+        rule :comparison do
+          match(:a_expr, :comp_operator, :a_expr) do |lh, op, rh|
+            Dunder::Nodes::Comparison.new lh, op, rh
           end
-          match(:function_call)
-          match(:number)
+          match(:a_expr)
         end
 
         rule :a_expr do
@@ -84,12 +85,28 @@ module Dunder
         end
 
         rule :u_expr do
-          match("+", :number)
-          match("-", :number) { |_, a| a.negative! }
+          match("+", :primary)
+          match("-", :primary) { |_, a| a.negative! }
+          match(:primary)
+        end
+
+        rule :primary do
+          match(:boolean)
           match(:number)
+          match(:string)
           match(:identifier) do |name|
             Dunder::Nodes::Variable.new name
           end
+          match(:function_call)
+        end
+
+        rule :comp_operator do
+          match('==')
+          match('<=')
+          match('>=')
+          match('>')
+          match('<')
+          match('!=')
         end
 
         rule :assignment_expression do
@@ -99,13 +116,18 @@ module Dunder
         end
 
         rule :identifier do
-          match(/[a-z][A-Za-z0-9_]*/) { |a| a }
-          match(/_[A-Za-z0-9_]+/) { |a| a }
+          match(/[a-z][A-Za-z0-9_]*/)
+          match(/_[A-Za-z0-9_]+/)
+        end
+
+        rule :boolean do
+          match('true') { Dunder::Nodes::DBoolean.new true }
+          match('false') { Dunder::Nodes::DBoolean.new false }
         end
 
         rule :number do
-          match(:integer)
           match(:float)
+          match(:integer)
         end
 
         rule :integer do
@@ -113,24 +135,24 @@ module Dunder
         end
 
         rule :float do
-          match(:digits, ".", :digits) { |a| Dunder::Nodes::DFloat.new a }
+          match(:digits, ".", :digits) { |a, _, b | Dunder::Nodes::DFloat.new a << "." << b }
         end
 
         rule :non_zero_digit do
-          match(/[1-9]/) { |a| a }
+          match(/[1-9]/)
         end
 
         rule :digits do
           match(:digits, :digit) { |a, b| a << b }
-          match(:digit) { |a| a }
+          match(:digit)
         end
 
         rule :digit do
-          match(/[0-9]/) { |a| a }
+          match(/[0-9]/)
         end
 
         rule :lowercase do
-          match(/[a-z]+/) { |a| a }
+          match(/[a-z]+/)
         end
 
         rule :string do

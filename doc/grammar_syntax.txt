@@ -18,11 +18,12 @@ function_def ::= identifier arguments "{" statement_list return_stmt? "}"
 
 expression ::= "false" |
 				       "true" |
+				       a_expr |
 				       number |
 				       string |
 				       indentifier |
 				       function_call |
-				       a_expr
+				       comparison
 
 a_expr ::= m_expr |
            a_expr "+" m_expr |
