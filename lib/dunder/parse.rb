@@ -18,9 +18,7 @@ module Dunder
         token(/./) { |t| t }
 
         start :statement_list do
-          match(:statement, :statement_terminator, :statement_list) do |a, _, b|
-            b = b + a
-          end
+          match(:statement, :statement_terminator, :statement_list) { |a, _, b| b += a }
           match(:statement, :statement_terminator)
           match(:statement)
         end

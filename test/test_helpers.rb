@@ -20,6 +20,8 @@ end
 #
 # Tests testing nodes should always be named: test_NODENAME
 # ex. test_addition tests the node Dunder::Node:Addition
+#
+# Any extra arguments passed are passed along to the initialization of the new node
 def create_node(test_method, *params)
   # Get available nodes so we can find the one we need, this has to be
   # done since we don't know which letters should be capitalized.
