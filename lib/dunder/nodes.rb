@@ -162,6 +162,18 @@ module Dunder
       end
     end
 
+    class WhileStatement < Node
+      def initialize(condition, stmt_list)
+        @condition, @stmt_list = condition, stmt_list
+      end
+
+      def eval()
+        while @condition.eval do
+          @stmt_list.eval
+        end
+      end
+    end
+
     class VariableAssignment < Node
       def initialize(name, node)
         @name = name.to_sym

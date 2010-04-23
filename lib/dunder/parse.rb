@@ -11,6 +11,11 @@ module Dunder
         # Remove whitespace, except newlines since they are statement_terminators
         token(/[ \t]+/)
 
+        # Remove all comments
+        token(/#.*$/)
+        token(/\/\*(\n|.)*\*\//)
+
+
         token(/[\n;]/) { |t| t }
 
 
@@ -50,6 +55,13 @@ module Dunder
           end
           match("if", "(", :expression, ")", /\n?\{/, :statement_list, /\}\n?/) do |_, _, condition, _, _, stmt_list, _|
             Dunder::Nodes::IfStatement.new condition, stmt_list
+          end
+        end
+
+        rule :while_statement do
+          match("while", "(", :expression, ")", /\n?\{/, :statement_list, "}") do
+            |_, _, condition, _, _, stmt_list, _|
+            Dunder::Nodes::WhileStatement.new condition, stmt_list
           end
         end
 
