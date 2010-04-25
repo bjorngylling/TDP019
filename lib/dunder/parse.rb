@@ -10,14 +10,15 @@ module Dunder
       @dunder_parser = Rdparse::Parser.new("dunder") do
         # Remove whitespace, except newlines since they are statement_terminators
         token(/[ \t]+/)
-
+        
         # Remove all comments
         token(/#.*$/)
         token(/\/\*(\n|.)*\*\//)
 
+        # Remove empty lines
+        token(/^\n$/)
 
         token(/[\n;]/) { |t| t }
-
 
         token(/\w+/) { |t| t }
 

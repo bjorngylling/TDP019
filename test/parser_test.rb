@@ -3,11 +3,8 @@ require "test/test_helpers.rb"
 class DunderParserTest < Test::Unit::TestCase
 
   def setup
-    @d_parser = Dunder::Parser.new
-  end
-
-  def teardown
     @d_parser = nil
+    @d_parser = Dunder::Parser.new
   end
 
   def test_addition
@@ -30,7 +27,7 @@ class DunderParserTest < Test::Unit::TestCase
     assert_equal 6, @d_parser.parse("4 +2").eval
     assert_equal 6, @d_parser.parse("4	+ 2").eval
     assert_equal 6, @d_parser.parse("4 +2\n").eval
-    assert_equal 6, @d_parser.parse("\n\n4 +2\n").eval
+    assert_equal 6, @d_parser.parse("\n\n\n\n\n4 +2\n").eval
   end
 
   def test_statement_list
