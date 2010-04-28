@@ -10,14 +10,13 @@ module Dunder
       @dunder_parser = Rdparse::Parser.new("dunder") do
         # Remove whitespace, except newlines since they are statement_terminators
         token(/[ \t]+/)
-        
+
         # Remove all comments
         token(/#.*$/)
         token(/\/\*(\n|.)*\*\//)
 
-        # Remove empty lines
-        token(/^\n$/)
 
+        # Statment terminators
         token(/[\n;]/) { |t| t }
 
         token(/\w+/) { |t| t }
@@ -30,6 +29,7 @@ module Dunder
           match(:statement, :statement_terminator, :statement_list) { |a, _, b| b = a + b }
           match(:statement, :statement_terminator)
           match(:statement)
+
         end
 
         rule :statement_terminator do
@@ -163,6 +163,7 @@ module Dunder
 
         rule :float do
           match(:digits, ".", :digits) { |a, _, b | Dunder::Nodes::DFloat.new a << "." << b }
+          match(".", :digits) { |_, b | Dunder::Nodes::DFloat.new "0" << "." << b }
         end
 
         rule :non_zero_digit do

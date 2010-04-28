@@ -66,6 +66,7 @@ class DunderParserTest < Test::Unit::TestCase
   def test_math_with_float
     assert_equal 5.3, @d_parser.parse("10.5 - 5.2").eval
     assert_equal 5.1, @d_parser.parse("10.2 * 0.5").eval
+    assert_equal 5.1, @d_parser.parse("10.2 * .5").eval
   end
 
   def test_boolean

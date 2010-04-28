@@ -1,8 +1,8 @@
-non_zero_digit ::= "1"..."9"
+digits ::= digit+
 
-integer ::= non_zero_digit digit* | "0"
+integer ::= digits
 
-float ::= [ integer ] . digit+
+float ::= [ digits ] . digits
 
 number ::= integer | float
 
@@ -16,14 +16,11 @@ function_call ::= identifier arguments
 
 function_def ::= identifier arguments "{" statement_list return_stmt? "}"
 
-expression ::= "false" |
-				       "true" |
-				       a_expr |
-				       number |
-				       string |
-				       indentifier |
-				       function_call |
+expression ::= assignment_expression |
 				       comparison
+
+comparison ::= a_expr comp_operator a_expr |
+                a_expr
 
 a_expr ::= m_expr |
            a_expr "+" m_expr |
@@ -33,9 +30,15 @@ m_expr ::= u_expr |
            m_expr "*" u_expr |
            m_expr "/" u_expr
 
-u_expr ::= number |
-           "-" u_expr |
-           "+" u_expr
+u_expr ::= primary |
+           "-" primary |
+           "+" primary
+
+primary ::= boolean |
+            number |
+            string |
+            indentifier |
+            function_call
 
 statement ::= assignment_expression |
 							function_call |
