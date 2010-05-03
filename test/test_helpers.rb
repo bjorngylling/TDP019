@@ -34,7 +34,10 @@ class DunderNodesTest < Test::Unit::TestCase
     
     node_name.new *params
   end
-
+  
+  def node(*params)
+    create_node method_name, *params
+  end
 
   def method_missing(name, *args)
     if name.to_s =~ /^int_(\d+)$/

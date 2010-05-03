@@ -3,56 +3,56 @@ require "test/test_helpers.rb"
 class DunderNodesTest < Test::Unit::TestCase
 
   def test_addition
-    assert_equal 15, create_node(method_name, int_10, int_5).eval
+    assert_equal 15, node(int_10, int_5).eval
   end
 
   def test_subtraction
-    assert_equal 5, create_node(method_name, int_10, int_5).eval
+    assert_equal 5, node(int_10, int_5).eval
   end
 
   def test_multiplication
-    assert_equal 50, create_node(method_name, int_10, int_5).eval
+    assert_equal 50, node(int_10, int_5).eval
   end
 
   def test_division
-    assert_equal 2, create_node(method_name, int_10, int_5).eval
+    assert_equal 2, node(int_10, int_5).eval
   end
 
   def test_advanced_addition
     # Create another Addition Node and use it as the left hand
-    sub_addition = create_node method_name, int_5, int_6
+    sub_addition = node int_5, int_6
 
-    assert_equal 21, create_node(method_name, sub_addition, int_10).eval
+    assert_equal 21, node(sub_addition, int_10).eval
   end
 
   def test_dboolean
-    assert_equal true, create_node(method_name, true).eval
-    assert_equal false, create_node(method_name, false).eval
-    assert_equal false, create_node(method_name, nil).eval
-    assert_equal false, create_node(method_name, int_0).eval
-    assert_equal true, create_node(method_name, int_1).eval
-    assert_equal true, create_node(method_name, create_node("dstring", "Yarrr!")).eval
+    assert_equal true, node(true).eval
+    assert_equal false, node(false).eval
+    assert_equal false, node(nil).eval
+    assert_equal false, node(int_0).eval
+    assert_equal true, node(int_1).eval
+    assert_equal true, node(create_node("dstring", "Yarrr!")).eval
   end
 
   def test_comparison
-    assert_equal true, create_node(method_name, int_10, "==", int_10).eval
-    assert_equal false, create_node(method_name, int_10, "==", int_5).eval
-    assert_equal true, create_node(method_name, int_10, "!=", int_5).eval
-    assert_equal false, create_node(method_name, int_5, "!=", int_5).eval
+    assert_equal true, node(int_10, "==", int_10).eval
+    assert_equal false, node(int_10, "==", int_5).eval
+    assert_equal true, node(int_10, "!=", int_5).eval
+    assert_equal false, node(int_5, "!=", int_5).eval
   end
 
   def test_ifstatement
     stmt_list = create_node("statementlist", create_node("addition", int_5, int_5))
     condition = create_node("dboolean", true)
 
-    assert_equal 10, create_node(method_name, condition, stmt_list).eval
+    assert_equal 10, node(condition, stmt_list).eval
   end
 
   def test_variableassignment
     scope = {} # Empty variable scope to store our test-variable
 
     # Make the assignment
-    create_node(method_name, "myVar", int_10).eval(scope)
+    node("myVar", int_10).eval(scope)
 
     assert_equal 10, scope[:myVar]
   end
@@ -62,12 +62,12 @@ class DunderNodesTest < Test::Unit::TestCase
     scope = {"PARENTSCOPE" => global_scope} # Empty variable scope to store our test-variable
 
     # Make the assignment
-    create_node(method_name, "myVar", int_10).eval(scope)
+    node("myVar", int_10).eval(scope)
     assert_equal 10, scope[:myVar]
     assert_nil global_scope[:myVar] # Should not pollute parent-scope
 
     # This time it should find "another_variable" in the parent-scope and overwrite it
-    create_node(method_name, "another_variable", int_5).eval(scope)
+    node("another_variable", int_5).eval(scope)
     assert_equal 5, global_scope[:another_variable]
     assert_nil scope[:another_variable] # Should not pollute other scopes
   end
@@ -75,15 +75,15 @@ class DunderNodesTest < Test::Unit::TestCase
   def test_variable
     scope = {:myVar => "hej"}
 
-    assert_equal "hej", create_node(method_name, "myVar").eval(scope)
+    assert_equal "hej", node("myVar").eval(scope)
   end
 
   def test_scope_variable
     global_scope = {:another_variable => "yes", :myVar => "goodbye"}
     scope = {"PARENTSCOPE" => global_scope, :myVar => "hej"}
 
-    assert_equal "hej", create_node(method_name, "myVar").eval(scope)
-    assert_equal "yes", create_node(method_name, "another_variable").eval(scope)
+    assert_equal "hej", node("myVar").eval(scope)
+    assert_equal "yes", node("another_variable").eval(scope)
   end
 
   def test_statementlist
@@ -94,10 +94,10 @@ class DunderNodesTest < Test::Unit::TestCase
 
     stmt_list_1 = create_node method_name, stmt_1
 
-    stmt_list_1 += create_node(method_name, stmt_2)
+    stmt_list_1 += node(stmt_2)
     assert_equal 2, stmt_list_1.list.length
 
-    stmt_list_1 += create_node(method_name, stmt_3)
+    stmt_list_1 += node(stmt_3)
     assert_equal 3, stmt_list_1.list.length
   end
 
