@@ -15,7 +15,8 @@ end
 
 class DunderNodesTest < Test::Unit::TestCase
   
-  ##
+  ## CREATE_NODE
+  #
   # Takes in name of the current test method and returns
   # a Node that is supposed to be tested by that method.
   # It takes anything after the last underscore and uses that
@@ -27,6 +28,7 @@ class DunderNodesTest < Test::Unit::TestCase
   #
   # Any extra arguments passed are passed along to the initialization of the new node
   # such as the value of a int or the terms in an addition node.
+  
   def create_node(test_method, *params)
     # Get available nodes so we can find the one we need, this has to be
     # done since we don't know which letters should be capitalized.
