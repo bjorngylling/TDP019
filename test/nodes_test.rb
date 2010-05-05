@@ -101,5 +101,20 @@ class DunderNodesTest < Test::Unit::TestCase
     assert_equal 3, stmt_list_1.list.length
   end
 
+  def test_functioncall
+    global_scope = Hash.new
+
+    # Create a bunch of statements
+    stmt_list = Array.new
+    stmt_list << create_node("addition", int_5, int_10)
+    stmt_list << create_node("addition", int_5, int_5)
+    stmt_list << create_node("multiplication", int_5, int_10)
+
+    function = create_node("functiondefinition", "foo", ["a", "b", "c"], stmt_list)
+    function.eval(global_scope)
+
+    assert_equal 50, node("foo", [12, 1, 3]).eval(global_scope)
+  end
+
 end
 

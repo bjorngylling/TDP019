@@ -3,10 +3,14 @@ module Dunder
 
     class Node
 
-      @@global_scope = {}
-
       def is_node?
         true
+      end
+
+      def global_scope
+        @global_scope ||= Hash.new
+#        puts "HEEEEEEEEEEEEEJ: #{@global_scope.class}"
+        @global_scope
       end
 
     end
@@ -28,10 +32,10 @@ module Dunder
         @statement_list
       end
 
-      def eval()
+      def eval(scope = global_scope)
         result = nil
         @statement_list.each do |stmt|
-          result = stmt.eval
+          result = stmt.eval(scope)
         end
 
         return result
@@ -43,7 +47,7 @@ module Dunder
         @value = value
       end
 
-      def eval()
+      def eval(scope = global_scope)
         @value
       end
     end
@@ -53,7 +57,7 @@ module Dunder
         @value = value.to_i
       end
 
-      def eval()
+      def eval(scope = global_scope)
         @value
       end
 
@@ -67,7 +71,7 @@ module Dunder
         @value = value.to_f
       end
 
-      def eval()
+      def eval(scope = global_scope)
         @value
       end
 
@@ -87,7 +91,7 @@ module Dunder
         end
       end
 
-      def eval()
+      def eval(scope = global_scope)
         @value
       end
     end
@@ -97,8 +101,8 @@ module Dunder
         @lh, @rh = lh, rh
       end
 
-      def eval()
-        (@lh.is_node? ? @lh.eval : @lh) + (@rh.is_node? ? @rh.eval : @rh)
+      def eval(scope = global_scope)
+        (@lh.is_node? ? @lh.eval(scope) : @lh) + (@rh.is_node? ? @rh.eval(scope) : @rh)
       end
     end
 
@@ -107,8 +111,8 @@ module Dunder
         @lh, @rh = lh, rh
       end
 
-      def eval()
-        (@lh.is_node? ? @lh.eval : @lh) - (@rh.is_node? ? @rh.eval : @rh)
+      def eval(scope = global_scope)
+        (@lh.is_node? ? @lh.eval(scope) : @lh) - (@rh.is_node? ? @rh.eval(scope) : @rh)
       end
     end
 
@@ -117,8 +121,8 @@ module Dunder
         @lh, @rh = lh, rh
       end
 
-      def eval()
-        (@lh.is_node? ? @lh.eval : @lh) * (@rh.is_node? ? @rh.eval : @rh)
+      def eval(scope = global_scope)
+        (@lh.is_node? ? @lh.eval(scope) : @lh) * (@rh.is_node? ? @rh.eval(scope) : @rh)
       end
     end
 
@@ -127,8 +131,8 @@ module Dunder
         @lh, @rh = lh, rh
       end
 
-      def eval()
-        (@lh.is_node? ? @lh.eval : @lh) / (@rh.is_node? ? @rh.eval : @rh)
+      def eval(scope = global_scope)
+        (@lh.is_node? ? @lh.eval(scope) : @lh) / (@rh.is_node? ? @rh.eval(scope) : @rh)
       end
     end
 
@@ -137,9 +141,9 @@ module Dunder
         @lh, @rh, @op = lh, rh, op
       end
 
-      def eval()
-        lh = @lh.eval || @lh
-        rh = @rh.eval || @rh
+      def eval(scope = global_scope)
+        lh = @lh.eval(scope) || @lh
+        rh = @rh.eval(scope) || @rh
 
         lh = "'#{lh}'" if lh.kind_of? String
         rh = "'#{rh}'" if rh.kind_of? String
@@ -153,11 +157,11 @@ module Dunder
         @condition, @stmt_list, @else_stmt_list = condition, stmt_list, else_stmt_list
       end
 
-      def eval()
-        if @condition.eval
-          @stmt_list.eval
+      def eval(scope = global_scope)
+        if @condition.eval(scope)
+          @stmt_list.eval(scope)
         elsif @else_stmt_list
-          @else_stmt_list.eval
+          @else_stmt_list.eval(scope)
         end
       end
     end
@@ -167,9 +171,9 @@ module Dunder
         @condition, @stmt_list = condition, stmt_list
       end
 
-      def eval()
-        while @condition.eval do
-          @stmt_list.eval
+      def eval(scope = global_scope)
+        while @condition.eval(scope) do
+          @stmt_list.eval(scope)
         end
       end
     end
@@ -180,23 +184,12 @@ module Dunder
         @node = node
       end
 
-      def eval(scope = @@global_scope)
-        value = @node.is_node? ? @node.eval : @node
+      def eval(scope = global_scope)
+        value = @node.is_node? ? @node.eval(scope) : @node
 
-        scope[@name] = value unless assign(scope, value)
+        scope[@name] = value unless Dunder::Helpers::assign(scope, @name, value)
 
         return value
-      end
-
-      def assign(scope, value)
-        if scope.has_key? @name
-          scope[@name] = @node.is_node? ? @node.eval : @node
-          return true
-        elsif scope.has_key? "PARENTSCOPE"
-          return assign(scope["PARENTSCOPE"], value)
-        else
-          return false
-        end
       end
 
     end
@@ -208,17 +201,68 @@ module Dunder
         @name = name.to_sym
       end
 
-      def eval(scope = @@global_scope)
-        if scope.include?(@name)
-          return scope[@name]
-        else
-          if scope.has_key? "PARENTSCOPE"
-            return eval(scope["PARENTSCOPE"])
-          else
-            return false
-          end
-        end
+      def eval(scope = global_scope)
+        return Dunder::Helpers::look_up(@name, scope)
       end
+    end
+
+    class ReturnExpression < Node
+      def initialize(expression)
+        @expression = expression
+      end
+
+      def eval(scope = global_scope)
+        @expression.eval(scope)
+      end
+    end
+
+    class FunctionDefinition < Node
+      attr_reader :params, :stmt_list
+
+      def initialize(name, params, stmt_list)
+        @name = name.to_sym
+        @params = params
+        @stmt_list = stmt_list
+      end
+
+      def eval(scope = global_scope)
+        scope[@name] = self unless Dunder::Helpers::assign(scope, @name, self)
+
+        return self
+      end
+
+    end
+
+    class FunctionCall < Node
+
+      def initialize(name, args)
+        @name = name.to_sym
+        @arguments = args
+      end
+
+      def eval(scope = global_scope)
+        # Find function definition in scopes
+        function_definition = Dunder::Helpers::look_up(@name, scope)
+
+        params = function_definition.params
+
+        function_scope = Hash[*params.zip(@arguments).flatten]
+        function_scope["PARENTSCOPE"] = scope
+
+        result = nil
+
+        function_definition.stmt_list.each do |statement|
+          if statement.kind_of? Dunder::Nodes::ReturnExpression
+            result = statement.eval(scope)
+            break
+          end
+
+          result = statement.eval(scope)
+        end
+
+        result
+      end
+
     end
 
   end

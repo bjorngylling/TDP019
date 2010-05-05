@@ -122,12 +122,12 @@ class DunderParserTest < Test::Unit::TestCase
   end
 
   def test_variable_reading
-    assert_equal 5, @d_parser.parse("var = 5").eval
-    assert_equal 5, @d_parser.parse("var").eval
-    assert_equal 200, @d_parser.parse("var = 100 * 2").eval
-    assert_equal 200, @d_parser.parse("var").eval
+    s = {}
+    assert_equal 5, @d_parser.parse("var = 5").eval(s)
+    assert_equal 5, @d_parser.parse("var").eval(s)
+    assert_equal 200, @d_parser.parse("var = 100 * 2").eval(s)
+    assert_equal 200, @d_parser.parse("var").eval(s)
 
-    @d_parser.parse("var = 0").eval # reset variable
 
     assert_equal 1000, @d_parser.parse("var = 100 * 10; var").eval
     assert_equal 1000, @d_parser.parse("var = 100 * 10;12 + 2; var").eval
