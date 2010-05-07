@@ -147,7 +147,65 @@ class DunderParserTest < Test::Unit::TestCase
                                           var = 100
                                         dfd*/ var").eval
   end
+  
+  def test_function_definition
+    assert @d_parser.parse("def foo() { 10 }").eval
+  end
+  
+  def test_function_without_arguments
+    global_scope = Hash.new
+    
+    @d_parser.parse("def foo() { 10 }").eval(global_scope)
+    
+    assert_equal 10, @d_parser.parse("foo()").eval(global_scope)
+  end
 
-
+  def test_function_with_arguments
+    global_scope = Hash.new
+    
+    @d_parser.parse("def foo(x) { x + 10 }").eval(global_scope)
+    
+    assert_equal 20, @d_parser.parse("foo(10)").eval(global_scope)
+  end
+  
+  def test_function_with_variable_as_argument
+    global_scope = Hash.new
+    
+    @d_parser.parse("def foo(x) { x + 10 }").eval(global_scope)
+    
+    assert_equal 40, @d_parser.parse("var = 30; foo(var)").eval(global_scope)
+  end
+  
+  def test_function_with_return
+    global_scope = Hash.new
+    @d_parser.parse("def foo(x) { x + 10
+                     return 12
+                     13 }").eval(global_scope)
+    
+    assert_equal 12, @d_parser.parse("foo(10)").eval(global_scope)
+    
+    global_scope = Hash.new
+    @d_parser.parse("def foo(x) { x = x + 10
+                     return x + 5
+                     13 }").eval(global_scope)
+    
+    assert_equal 25, @d_parser.parse("foo(10)").eval(global_scope)
+  end
+  
+  def test_recursive_functions
+    global_scope = Hash.new
+    
+    code = 
+"def foo(x) { x = x + 10
+  if(x > 100) { return x 
+  } else { return foo(x) 
+  }
+}"
+    
+    @d_parser.parse(code).eval(global_scope)
+    
+    assert_equal 110, @d_parser.parse("foo(0)").eval(global_scope)
+  end
+  
 end
 

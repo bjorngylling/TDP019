@@ -29,7 +29,6 @@ module Dunder
           match(:statement, :statement_terminator, :statement_list) { |a, _, b| b = a + b }
           match(:statement, :statement_terminator)
           match(:statement)
-
         end
 
         rule :statement_terminator do
@@ -47,41 +46,77 @@ module Dunder
           match(:while_statement)
           match(:function_def)
         end
+        
+        rule :block_start do
+          match('{')
+        end
+        
+        rule :block_end do
+          match('}')
+        end
 
         rule :if_statement do
-          match("if", "(", :expression, ")", /\n?\{/, :statement_list, /\}\n?/,
-                "else", /\n?\{/, :statement_list, /\}\n?/) do
+          match("if", "(", :expression, ")", :block_start, :statement_list, :block_end,
+                "else", :block_start, :statement_list, :block_end) do
                   |_, _, condition, _, _, stmt_list, _, _, _, else_stmt_list, _|
                   Dunder::Nodes::IfStatement.new condition, stmt_list, else_stmt_list
           end
-          match("if", "(", :expression, ")", /\n?\{/, :statement_list, /\}\n?/) do |_, _, condition, _, _, stmt_list, _|
+          match("if", "(", :expression, ")", :block_start, :statement_list, :block_end) do |_, _, condition, _, _, stmt_list, _|
             Dunder::Nodes::IfStatement.new condition, stmt_list
           end
         end
 
         rule :while_statement do
-          match("while", "(", :expression, ")", /\n?\{/, :statement_list, "}") do
+          match("while", "(", :expression, ")", :block_start, :statement_list, :block_end) do
             |_, _, condition, _, _, stmt_list, _|
             Dunder::Nodes::WhileStatement.new condition, stmt_list
           end
         end
+        
+        rule :function_def do
+          match("def", :identifier, :parameters, :block_start, :statement_list, :block_end) do
+            |_, name, parameters, _, stmt_list, _|
+            Dunder::Nodes::FunctionDefinition.new name, parameters, stmt_list.list
+          end
+        end
+        
+        rule :parameters do
+          match('(', :parameter_list, ')') { |_, list, _| list}
+          match('(', ')') { |_, _| [] }
+        end
+        
+        rule :parameter_list do
+          match(:identifier, ",", :parameters) { |identifier, _, params| params + [identifier] }
+          match(:identifier) { |identifier| [identifier] }
+        end
 
         rule :function_call do
-          match(:identifier, :arguments)
+          match(:identifier, :arguments) do |name, args|
+            Dunder::Nodes::FunctionCall.new name, args
+          end
         end
 
         rule :arguments do
-          match('(', :expression_list, ')')
+          match('(', :expression_list, ')') { |_, list, _| list }
+          match('(', ')') { |_, _| [] }
         end
 
         rule :expression_list do
-          match(:expression_list, ',', :expression)
-          match(:expression)
+          match(:expression, ',', :expression_list) { |expression, _, list| list + [expression] }
+          match(:expression) { |expression| [expression] }
         end
 
         rule :expression do
+          match(:return_expression)
           match(:assignment_expression) { |a| Dunder::Nodes::StatementList.new a }
+          match(:function_call)
           match(:comparison)
+        end
+        
+        rule :return_expression do
+          match("return", :expression) do |_, expression|
+            Dunder::Nodes::ReturnExpression.new expression 
+          end
         end
 
         rule :comparison do

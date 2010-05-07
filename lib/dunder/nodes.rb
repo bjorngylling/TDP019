@@ -9,7 +9,6 @@ module Dunder
 
       def global_scope
         @global_scope ||= Hash.new
-#        puts "HEEEEEEEEEEEEEJ: #{@global_scope.class}"
         @global_scope
       end
 
@@ -243,21 +242,21 @@ module Dunder
       def eval(scope = global_scope)
         # Find function definition in scopes
         function_definition = Dunder::Helpers::look_up(@name, scope)
-
-        params = function_definition.params
-
-        function_scope = Hash[*params.zip(@arguments).flatten]
+        
+        params = function_definition.params.map { |param| param.to_sym }
+        
+        function_scope = Hash[*params.zip(@arguments.map {|a| a.eval(scope) if a.is_node?}).flatten]
         function_scope["PARENTSCOPE"] = scope
-
+        
         result = nil
 
         function_definition.stmt_list.each do |statement|
           if statement.kind_of? Dunder::Nodes::ReturnExpression
-            result = statement.eval(scope)
+            result = statement.eval(function_scope)
             break
           end
 
-          result = statement.eval(scope)
+          result = statement.eval(function_scope)
         end
 
         result
