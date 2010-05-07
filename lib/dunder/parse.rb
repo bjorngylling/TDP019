@@ -11,19 +11,10 @@ module Dunder
         # Remove whitespace, except newlines since they are statement_terminators
         token(/[ \t]+/)
 
-        # Remove all comments
-        token(/#.*$/)
-        token(/\/\*(\n|.)*\*\//)
-
-
         # Statment terminators
         token(/[\n;]/) { |t| t }
 
-        token(/\w+/) { |t| t }
-
-        token(/==|<=|>=|!=/) { |t| t }
-
-        token(/./) { |t| t }
+        token(/\w+|'|"|==|<=|>=|!=|\+|-|\*|<|>|\/|=|\{|\}|\(|\)|\.|,/) { |t| t }
 
         start :statement_list do
           match(:statement, :statement_terminator, :statement_list) { |a, _, b| b = a + b }
@@ -86,7 +77,7 @@ module Dunder
         end
         
         rule :parameter_list do
-          match(:identifier, ",", :parameters) { |identifier, _, params| params + [identifier] }
+          match(:identifier, ",", :parameter_list) { |identifier, _, params| params + [identifier] }
           match(:identifier) { |identifier| [identifier] }
         end
 
@@ -229,7 +220,21 @@ module Dunder
     end
 
     def parse(code)
+      code = remove_comments_in(code)
+      code = remove_unwanted_newlines_in(code)
+      
       @dunder_parser.parse(code)
+    end
+    
+    def remove_comments_in(code)
+      code = code.gsub /#.*$/, ""
+      code = code.gsub /\/\*(\n|.)*\*\//, ""
+    end
+    
+    def remove_unwanted_newlines_in(string)
+      string.gsub! /^[ |\t]*\n/, ""
+      string.gsub! /\{[ |\t]*\n/, "{"
+      string.gsub /\}[ |\t]*\n[ |\t]*else/, "} else"
     end
 
     def log(state = true)
@@ -239,7 +244,6 @@ module Dunder
         @dunder_parser.logger.level = Logger::WARN
       end
     end
-
   end
 
 end

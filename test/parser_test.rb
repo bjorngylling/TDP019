@@ -6,7 +6,7 @@ class DunderParserTest < Test::Unit::TestCase
     @d_parser = nil
     @d_parser = Dunder::Parser.new
   end
-
+  
   def test_addition
     assert_equal 6, @d_parser.parse("4+2").eval
   end
@@ -22,12 +22,22 @@ class DunderParserTest < Test::Unit::TestCase
   def test_division
     assert_equal 4, @d_parser.parse("8/2").eval
   end
+  
+  def test_parser_function_remove_unwanted_newlines_in
+    string = "Here comes two empty rows with tabs
+    
+    
+and here is the last row"
+    expected_result = "Here comes two empty rows with tabs
+and here is the last row"
+    assert_equal expected_result, @d_parser.remove_unwanted_newlines_in(string)
+  end
 
   def test_whitespace
     assert_equal 6, @d_parser.parse("4 +2").eval
     assert_equal 6, @d_parser.parse("4	+ 2").eval
     assert_equal 6, @d_parser.parse("4 +2\n").eval
-    assert_equal 6, @d_parser.parse("\n\n\n\n\n4 +2\n").eval
+    assert_equal 6, @d_parser.parse("#HEEEJ\n\n\n4 +2\n").eval
   end
 
   def test_statement_list
@@ -107,7 +117,7 @@ class DunderParserTest < Test::Unit::TestCase
               new_var = y + 30
             }
             new_var"
-    #assert_equal 44, @d_parser.parse(code).eval # Doesnt work because of new-linefails
+    assert_equal 44, @d_parser.parse(code).eval
   end
 
   def test_whilestatement
@@ -168,6 +178,14 @@ class DunderParserTest < Test::Unit::TestCase
     assert_equal 20, @d_parser.parse("foo(10)").eval(global_scope)
   end
   
+  def test_function_with_multiple_arguments
+    global_scope = Hash.new
+    
+    @d_parser.parse("def foo(x, y) { x + y }").eval(global_scope)
+    
+    assert_equal 15, @d_parser.parse("foo(10, 5)").eval(global_scope)
+  end
+  
   def test_function_with_variable_as_argument
     global_scope = Hash.new
     
@@ -196,15 +214,18 @@ class DunderParserTest < Test::Unit::TestCase
     global_scope = Hash.new
     
     code = 
-"def foo(x) { x = x + 10
-  if(x > 100) { return x 
-  } else { return foo(x) 
+"def foo(x) { 
+  if(x >= 100) { 
+    return x 
+  } 
+  else { 
+    return foo(x + 10) 
   }
 }"
     
     @d_parser.parse(code).eval(global_scope)
     
-    assert_equal 110, @d_parser.parse("foo(0)").eval(global_scope)
+    assert_equal 100, @d_parser.parse("foo(0)").eval(global_scope)
   end
   
 end
