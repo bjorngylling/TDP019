@@ -100,7 +100,6 @@ module Dunder
         rule :expression do
           match(:return_expression)
           match(:assignment_expression) { |a| Dunder::Nodes::StatementList.new a }
-          match(:function_call)
           match(:comparison)
         end
         
@@ -144,6 +143,7 @@ module Dunder
         end
 
         rule :primary do
+          match(:function_call)
           match(:boolean)
           match(:number)
           match(:string)
@@ -228,6 +228,7 @@ module Dunder
     
     def remove_comments_in(code)
       code = code.gsub /#.*$/, ""
+      code = code.gsub /\/\/.*$/, ""
       code = code.gsub /\/\*(\n|.)*\*\//, ""
     end
     

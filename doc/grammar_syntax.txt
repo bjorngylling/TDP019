@@ -34,11 +34,11 @@ u_expr ::= primary |
            "-" primary |
            "+" primary
 
-primary ::= boolean |
+primary ::= function_call |
+            boolean |
             number |
             string |
-            indentifier |
-            function_call
+            indentifier
 
 statement ::= assignment_expression |
 							function_call |

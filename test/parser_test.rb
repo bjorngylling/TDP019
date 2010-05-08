@@ -155,6 +155,9 @@ and here is the last row"
     assert_equal 1000, @d_parser.parse("var = 100 * 10
                                         12 + 2 # var = 10
                                         var").eval
+assert_equal 1000, @d_parser.parse("var = 100 * 10
+                                        12 + 2 // var = 10
+                                        var").eval
     assert_equal 1000, @d_parser.parse("var = 100 * 10
                                         12 + 2 # var = 12
                                         /* hejeje
@@ -241,7 +244,7 @@ and here is the last row"
 }"
     @d_parser.parse(code).eval(global_scope)
     
-    assert_equal 100, @d_parser.parse("fib(5)").eval(global_scope)
+    assert_equal 8, @d_parser.parse("fib(6)").eval(global_scope)
   end
   
 end
