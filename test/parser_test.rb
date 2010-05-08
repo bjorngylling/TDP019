@@ -130,6 +130,10 @@ and here is the last row"
     assert_equal 1000, @d_parser.parse("var = 100 * 10").eval
     assert_equal 20, @d_parser.parse("x = 19; x = x + 1").eval
   end
+  
+  def test_string_with_nonstandard_characters
+    assert_equal "heh&&lll", @d_parser.parse('var = "heh&&lll"').eval
+  end
 
   def test_variable_reading
     s = {}
@@ -226,6 +230,18 @@ and here is the last row"
     @d_parser.parse(code).eval(global_scope)
     
     assert_equal 100, @d_parser.parse("foo(0)").eval(global_scope)
+    
+    code =
+"def fib(n) {
+  if (n <= 1) {
+    return n
+  } else {
+    return fib(n-1)+fib(n-2)
+  }
+}"
+    @d_parser.parse(code).eval(global_scope)
+    
+    assert_equal 100, @d_parser.parse("fib(5)").eval(global_scope)
   end
   
 end
