@@ -19,9 +19,9 @@ module Dunder
         token(/[ \t]+/)
 
         # Statment terminators
-        token(/[\n;]/) { |t| t }
+        token(/[\r\n;]/) { |t| t }
 
-        token(/\w+|'|"|==|<=|>=|!=|\+|-|\*|<|>|\/|=|\{|\}|\(|\)|\.|,/) { |t| t }
+        token(/\w+|==|<=|>=|!=|\+|-|\*|<|>|\/|=|\{|\}|\(|\)|\.|,/) { |t| t }
 
         start :statement_list do
           match(:statement, :statement_terminator, :statement_list) { |a, _, b| b = a + b }
@@ -31,6 +31,7 @@ module Dunder
 
         rule :statement_terminator do
           match("\n")
+          match("\r", "\n")
           match(";")
         end
 
@@ -145,7 +146,7 @@ module Dunder
 
         rule :u_expr do
           match("+", :primary)
-          match("-", :primary) { |_, a| a.negative }
+          match("-", :primary) { |_, a| a.negative! }
           match(:primary)
         end
 
@@ -221,6 +222,36 @@ module Dunder
       code = remove_unwanted_newlines_in(code)
       
       @dunder_parser.parse(code)
+    end
+    
+    def interactive_parser
+      global_scope = Hash.new
+      code = ""
+      nested_blocks = 0 
+      
+      puts "Dunder interactive parser. Type exit to quit."
+      while(true)  
+        print "Dunder> "
+        line = STDIN.gets
+        break if line.chomp == "exit"
+        
+        code += line
+        
+        # Check if the line includes {, then there's more coming
+        # so don't parse the code yet.
+        if line.include? "{"
+          nested_blocks += 1
+          next
+        end
+        
+        if line.include? "}"
+          nested_blocks -= 1
+        end
+        
+        if nested_blocks == 0
+          puts parse(code).eval
+        end
+      end
     end
     
     def remove_comments_in(code)

@@ -60,7 +60,7 @@ module Dunder
         @value
       end
 
-      def negative
+      def negative!
         @value = -@value
       end
     end
@@ -74,7 +74,7 @@ module Dunder
         @value
       end
 
-      def negative
+      def negative!
         @value = -@value
       end
     end

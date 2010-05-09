@@ -10,6 +10,10 @@ class DunderParserTest < Test::Unit::TestCase
   def test_addition
     assert_equal 6, @d_parser.parse("4+2").eval
   end
+  
+  def test_addition_with_strings
+    assert_equal "hej då", @d_parser.parse("'hej' + ' då'").eval
+  end
 
   def test_subtraction
     assert_equal 6, @d_parser.parse("8-2").eval
@@ -123,6 +127,15 @@ and here is the last row"
 
   def test_whilestatement
     assert_equal 10, @d_parser.parse("x = 1; while(x < 10) { x = x + 1 }; x").eval
+
+    code = "x = 1
+answer = 1
+while(x <= number) { #Körs tills x är större än number
+  answer = answer * x #Multiplicerar det nuvarande numret med gamla faktorn
+  x = x + 1
+}"    
+    assert_equal 10, @d_parser.parse(code).eval
+
   end
 
   def test_variable_assignment
@@ -137,7 +150,7 @@ and here is the last row"
   end
 
   def test_variable_reading
-    s = {}
+    s = Hash.new
     assert_equal 5, @d_parser.parse("var = 5").eval(s)
     assert_equal 5, @d_parser.parse("var").eval(s)
     assert_equal 200, @d_parser.parse("var = 100 * 2").eval(s)
@@ -156,7 +169,7 @@ and here is the last row"
     assert_equal 1000, @d_parser.parse("var = 100 * 10
                                         12 + 2 # var = 10
                                         var").eval
-assert_equal 1000, @d_parser.parse("var = 100 * 10
+    assert_equal 1000, @d_parser.parse("var = 100 * 10
                                         12 + 2 // var = 10
                                         var").eval
     assert_equal 1000, @d_parser.parse("var = 100 * 10
@@ -246,6 +259,10 @@ assert_equal 1000, @d_parser.parse("var = 100 * 10
     @d_parser.parse(code).eval(global_scope)
     
     assert_equal 8, @d_parser.parse("fib(6)").eval(global_scope)
+  end
+  
+  def test_run_code_from_file
+    assert_equal 120, exec("ruby lib/dunder.rb test/fixtures/factorial.dun")
   end
   
 end
