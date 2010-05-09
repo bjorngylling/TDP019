@@ -8,6 +8,9 @@ module Dunder
           if scope.has_key? "PARENTSCOPE"
             # Go up one scope and look for it there
             return look_up(name, scope["PARENTSCOPE"])
+          elsif scope.has_key? "OUTSIDE_FUNCTION_DEF"
+            # Go up one scope and look for it there
+            return look_up(name, scope["OUTSIDE_FUNCTION_DEF"])
           else
             return false
           end

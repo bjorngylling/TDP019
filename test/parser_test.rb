@@ -103,16 +103,40 @@ and here is the last row"
   end
 
   def test_ifstatement
-    assert_equal 102, @d_parser.parse("if(10 == 10) { 100 + 2 }").eval
-    assert_equal nil, @d_parser.parse("if(10 == 10) { if(20==19){100+15} }").eval
-    assert_equal 115, @d_parser.parse("if(10 == 10) { if(20==20){100+15} }").eval
-    assert_equal false, @d_parser.parse("if(10 == 11) { arne = 20 }; arne").eval
+    assert_equal 102, @d_parser.parse("if(10 == 10) {
+                                         100 + 2
+                                       }").eval
+    assert_equal nil, @d_parser.parse("if(10 == 10) { 
+                                         if(20==19) { 100+15 }
+                                       }").eval
+    assert_equal 115, @d_parser.parse("if(10 == 10) { 
+                                         if(20==20) { 100+15 }
+                                       }").eval
+    assert_equal false, @d_parser.parse("if(10 == 11) {
+                                           arne = 20 
+                                         }
+                                         arne").eval
   end
 
   def test_ifelsestatement
-    assert_equal 102, @d_parser.parse("if(10 == 10) { 100 + 2 } else { 100 - 2 }").eval
-    assert_equal 98, @d_parser.parse("if(10 == 11) { 100 + 2 } else { 100 - 2 }").eval
-    assert_equal "hej", @d_parser.parse("if(10 == 11) { arne = 20 } else { foo = 'hej' }; foo").eval
+    assert_equal 102, @d_parser.parse("if(10 == 10) { 
+                                         100 + 2
+                                       } else { 
+                                         100 - 2 
+                                       }").eval
+    
+    assert_equal 98, @d_parser.parse("if(10 == 11) { 
+                                        100 + 2 
+                                      } else { 
+                                        100 - 2
+                                      }").eval
+                                      
+    assert_equal "hej", @d_parser.parse("if(10 == 11) { 
+                                           arne = 20 
+                                         } else { 
+                                           foo = 'hej' 
+                                         }
+                                         foo").eval
 
     code = "x = 12
             y = 10 + 2
@@ -126,15 +150,19 @@ and here is the last row"
   end
 
   def test_whilestatement
-    assert_equal 10, @d_parser.parse("x = 1; while(x < 10) { x = x + 1 }; x").eval
+    assert_equal 10, @d_parser.parse("x = 1; 
+                                      while(x < 10) { x = x + 1 }; x").eval
 
     code = "x = 1
-answer = 1
-while(x <= number) { #Körs tills x är större än number
-  answer = answer * x #Multiplicerar det nuvarande numret med gamla faktorn
-  x = x + 1
-}"    
-    assert_equal 10, @d_parser.parse(code).eval
+            answer = 1
+            number = 5
+            while(x <= number) { #Körs tills x är större än number
+              #Multiplicerar det nuvarande numret med gamla faktorn
+              answer = answer * x
+              x = x + 1
+            }
+            answer"    
+    assert_equal 120, @d_parser.parse(code).eval
 
   end
 
@@ -164,6 +192,21 @@ while(x <= number) { #Körs tills x är större än number
                                         var").eval
     assert_equal 1000, @d_parser.parse("var = 100 * 10;x = 12; var").eval
   end
+  
+  def test_scope
+    s = Hash.new
+    
+    code = "x = 0
+            while(x < 5) {
+              x = x + 1
+              z = x
+            }"
+            
+    @d_parser.parse(code).eval(s)
+    
+    assert_equal false, @d_parser.parse("z").eval(s) # z should not be set
+    assert_equal 5, @d_parser.parse("x").eval(s)
+  end
 
   def test_comments
     assert_equal 1000, @d_parser.parse("var = 100 * 10
@@ -174,7 +217,7 @@ while(x <= number) { #Körs tills x är större än number
                                         var").eval
     assert_equal 1000, @d_parser.parse("var = 100 * 10
                                         12 + 2 # var = 12
-                                        /* hejeje
+                                        /* hejeje */ comment does not end here
                                           var = 100
                                         dfd*/ var").eval
   end
@@ -234,35 +277,55 @@ while(x <= number) { #Körs tills x är större än number
   def test_recursive_functions
     global_scope = Hash.new
     
-    code = 
-"def foo(x) { 
-  if(x >= 100) { 
-    return x 
-  } 
-  else { 
-    return foo(x + 10) 
-  }
-}"
+    code = "def foo(x) { 
+              if(x >= 100) { 
+                return x 
+              } 
+              else { 
+                return foo(x + 10) 
+              }
+            }"
     
     @d_parser.parse(code).eval(global_scope)
     
     assert_equal 100, @d_parser.parse("foo(0)").eval(global_scope)
     
-    code =
-"def fib(n) {
-  if (n <= 1) {
-    return n
-  } else {
-    return fib(n-1)+fib(n-2)
-  }
-}"
+    code = "def fib(n) {
+              if (n <= 1) {
+                return n
+              } else {
+                return fib(n-1)+fib(n-2)
+              }
+            }"
     @d_parser.parse(code).eval(global_scope)
     
     assert_equal 8, @d_parser.parse("fib(6)").eval(global_scope)
   end
   
   def test_run_code_from_file
-    assert_equal 120, exec("ruby lib/dunder.rb test/fixtures/factorial.dun")
+    result = %x[ruby lib/dunder.rb test/fixtures/factorial.dun]
+    assert_equal 120, result.chomp.to_i
+  end
+  
+  def test_print
+    require 'stringio'
+
+    # Redirect stdout to output
+    output = StringIO.new
+    old_stdout, $stdout = $stdout, output
+    
+    code = "x = 0
+            while(x < 5) {
+              x = x + 1
+              print 'Hello world'
+            }"
+            
+    @d_parser.parse(code).eval
+    
+    # Restore stdout
+    $stdout = old_stdout
+    
+    assert_equal ("Hello world\n" * 5), output.string
   end
   
 end

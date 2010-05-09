@@ -2,7 +2,7 @@ module Dunder
   module Nodes
 
     class Node
-
+      
       def is_node?
         true
       end
@@ -101,7 +101,8 @@ module Dunder
       end
 
       def eval(scope = global_scope)
-        (@lh.is_node? ? @lh.eval(scope) : @lh) + (@rh.is_node? ? @rh.eval(scope) : @rh)
+        (@lh.is_node? ? @lh.eval(scope) : @lh) + 
+        (@rh.is_node? ? @rh.eval(scope) : @rh)
       end
     end
 
@@ -111,7 +112,8 @@ module Dunder
       end
 
       def eval(scope = global_scope)
-        (@lh.is_node? ? @lh.eval(scope) : @lh) - (@rh.is_node? ? @rh.eval(scope) : @rh)
+        (@lh.is_node? ? @lh.eval(scope) : @lh) - 
+        (@rh.is_node? ? @rh.eval(scope) : @rh)
       end
     end
 
@@ -121,7 +123,8 @@ module Dunder
       end
 
       def eval(scope = global_scope)
-        (@lh.is_node? ? @lh.eval(scope) : @lh) * (@rh.is_node? ? @rh.eval(scope) : @rh)
+        (@lh.is_node? ? @lh.eval(scope) : @lh) * 
+        (@rh.is_node? ? @rh.eval(scope) : @rh)
       end
     end
 
@@ -131,7 +134,8 @@ module Dunder
       end
 
       def eval(scope = global_scope)
-        (@lh.is_node? ? @lh.eval(scope) : @lh) / (@rh.is_node? ? @rh.eval(scope) : @rh)
+        (@lh.is_node? ? @lh.eval(scope) : @lh) / 
+        (@rh.is_node? ? @rh.eval(scope) : @rh)
       end
     end
 
@@ -153,7 +157,9 @@ module Dunder
 
     class IfStatement < Node
       def initialize(condition, stmt_list, else_stmt_list = nil)
-        @condition, @stmt_list, @else_stmt_list = condition, stmt_list, else_stmt_list
+        @condition = condition
+        @stmt_list = stmt_list
+        @else_stmt_list = else_stmt_list
       end
 
       def eval(scope = global_scope)
@@ -171,8 +177,9 @@ module Dunder
       end
 
       def eval(scope = global_scope)
-        while @condition.eval(scope) do
-          @stmt_list.eval(scope)
+        while_scope = {"PARENTSCOPE" => scope}
+        while @condition.eval(while_scope) do
+          @stmt_list.eval(while_scope)
         end
       end
     end
@@ -186,7 +193,7 @@ module Dunder
       def eval(scope = global_scope)
         value = @node.is_node? ? @node.eval(scope) : @node
 
-        scope[@name] = value unless Dunder::Helpers::assign(scope, @name, value)
+        scope[@name] = value unless Helpers::assign(scope, @name, value)
 
         return value
       end
@@ -201,11 +208,21 @@ module Dunder
       end
 
       def eval(scope = global_scope)
-        return Dunder::Helpers::look_up(@name, scope)
+        return Helpers::look_up(@name, scope)
+      end
+    end
+    
+    class PrintStatement < Node
+      def initialize(expression)
+        @string = expression
+      end
+
+      def eval(scope = global_scope)
+        puts @string.eval(scope)
       end
     end
 
-    class ReturnExpression < Node
+    class ReturnStatement < Node
       def initialize(expression)
         @expression = expression
       end
@@ -245,13 +262,21 @@ module Dunder
         
         params = function_definition.params.map { |param| param.to_sym }
         
-        function_scope = Hash[*params.zip(@arguments.map {|a| a.eval(scope) if a.is_node?}).flatten]
-        function_scope["PARENTSCOPE"] = scope
+        if params.length != @arguments.length
+          return "Function #{@name.to_s} called with invalid number of \
+arguments. (#{@arguments.length} for #{params.length})"
+        end
+        
+        # Give our parameters value from the argument-array and create 
+        # a scope from that.
+        evaluated_arguments = @arguments.map {|a| a.eval(scope) if a.is_node?}
+        function_scope = Hash[*params.zip(evaluated_arguments).flatten]
+        function_scope["OUTSIDE_FUNCTION_DEF"] = scope
         
         result = nil
 
         function_definition.stmt_list.each do |statement|
-          if statement.kind_of? Dunder::Nodes::ReturnExpression
+          if statement.kind_of? Dunder::Nodes::ReturnStatement
             result = statement.eval(function_scope)
             break
           end

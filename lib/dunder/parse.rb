@@ -15,7 +15,8 @@ module Dunder
         token(/'[^']*'/) { |t| DString.new t.delete("'") }
         token(/"[^"]*"/) { |t| DString.new t.delete('"') }
         
-        # Remove whitespace, except newlines since they are statement_terminators
+        # Remove whitespace, except newlines since 
+        # they are statement_terminators
         token(/[ \t]+/)
 
         # Statment terminators
@@ -24,26 +25,35 @@ module Dunder
         token(/\w+|==|<=|>=|!=|\+|-|\*|<|>|\/|=|\{|\}|\(|\)|\.|,/) { |t| t }
 
         start :statement_list do
-          match(:statement, :statement_terminator, :statement_list) { |a, _, b| b = a + b }
+          match(:statement, :statement_terminator, :statement_list) do 
+            |a, _, b|
+            b = a + b
+          end
           match(:statement, :statement_terminator)
           match(:statement)
         end
 
         rule :statement_terminator do
           match("\n")
-          match("\r", "\n")
           match(";")
         end
 
         rule :statement do
           match(:return_statement) { |a| StatementList.new a }
+          match(:print_statement) { |a| StatementList.new a }
           match(:compound_statement) { |a| StatementList.new a }
           match(:expression) { |a| StatementList.new a }
         end
         
         rule :return_statement do
           match("return", :expression) do |_, expression|
-            ReturnExpression.new expression 
+            ReturnStatement.new expression 
+          end
+        end
+        
+        rule :print_statement do
+          match("print", :string) do |_, string|
+            PrintStatement.new string 
           end
         end
 
@@ -62,25 +72,33 @@ module Dunder
         end
 
         rule :if_statement do
-          match("if", "(", :expression, ")", :block_start, :statement_list, :block_end,
-                "else", :block_start, :statement_list, :block_end) do
-                  |_, _, condition, _, _, stmt_list, _, _, _, else_stmt_list, _|
-                  IfStatement.new condition, stmt_list, else_stmt_list
+          match("if", "(", :expression, ")", :block_start, 
+                  :statement_list,
+                :block_end,
+                "else", :block_start, 
+                  :statement_list, 
+                :block_end) do
+            |_, _, condition, _, _, stmt_list, _, _, _, else_stmt_list, _|
+            IfStatement.new condition, stmt_list, else_stmt_list
           end
-          match("if", "(", :expression, ")", :block_start, :statement_list, :block_end) do |_, _, condition, _, _, stmt_list, _|
+          match("if", "(", :expression, ")", :block_start, 
+                  :statement_list, 
+                :block_end) do |_, _, condition, _, _, stmt_list, _|
             IfStatement.new condition, stmt_list
           end
         end
 
         rule :while_statement do
-          match("while", "(", :expression, ")", :block_start, :statement_list, :block_end) do
+          match("while", "(", :expression, ")", :block_start, 
+                  :statement_list, :block_end) do
             |_, _, condition, _, _, stmt_list, _|
             WhileStatement.new condition, stmt_list
           end
         end
         
         rule :function_def do
-          match("def", :identifier, :parameters, :block_start, :statement_list, :block_end) do
+          match("def", :identifier, :parameters, :block_start, 
+                  :statement_list, :block_end) do
             |_, name, parameters, _, stmt_list, _|
             FunctionDefinition.new name, parameters, stmt_list.list
           end
@@ -92,7 +110,10 @@ module Dunder
         end
         
         rule :parameter_list do
-          match(:identifier, ",", :parameter_list) { |identifier, _, params| params + [identifier] }
+          match(:identifier, ",", :parameter_list) do
+            |identifier, _, params|
+            params + [identifier]
+          end
           match(:identifier) { |identifier| [identifier] }
         end
 
@@ -108,7 +129,10 @@ module Dunder
         end
 
         rule :expression_list do
-          match(:expression, ',', :expression_list) { |expression, _, list| list + [expression] }
+          match(:expression, ',', :expression_list) do
+            |expression, _, list|
+            list + [expression]
+          end
           match(:expression) { |expression| [expression] }
         end
 
@@ -249,7 +273,7 @@ module Dunder
         end
         
         if nested_blocks == 0
-          puts parse(code).eval
+          puts parse(code).eval(global_scope)
         end
       end
     end
@@ -261,6 +285,7 @@ module Dunder
     end
     
     def remove_unwanted_newlines_in(string)
+      string.gsub! /;[ |\t]*\n/, "\n"
       string.gsub! /^[ |\t]*\n/, ""
       string.gsub! /\{[ |\t]*\n/, "{"
       string.gsub /\}[ |\t]*\n[ |\t]*else/, "} else"

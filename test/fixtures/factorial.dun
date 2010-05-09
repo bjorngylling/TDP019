@@ -1,0 +1,15 @@
+def factorial(number) {
+  if(number <=0) { #Kollar om number är giltligt
+    print("Talet är för litet")
+    return 0
+  }
+  x = 1
+  answer = 1
+  while(x <= number) { #Körs tills x är större än number
+    answer = answer * x #Multiplicerar det nuvarande numret med gamla faktorn
+    x = x + 1
+  }
+  return answer #Returnerar svaret
+}
+
+factorial(5)
