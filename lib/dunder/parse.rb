@@ -28,8 +28,15 @@ module Dunder
         end
 
         rule :statement do
+          match(:return_statement) { |a| Dunder::Nodes::StatementList.new a }
           match(:compound_statement) { |a| Dunder::Nodes::StatementList.new a }
           match(:expression) { |a| Dunder::Nodes::StatementList.new a }
+        end
+        
+        rule :return_statement do
+          match("return", :expression) do |_, expression|
+            Dunder::Nodes::ReturnExpression.new expression 
+          end
         end
 
         rule :compound_statement do
@@ -98,15 +105,8 @@ module Dunder
         end
 
         rule :expression do
-          match(:return_expression)
           match(:assignment_expression) { |a| Dunder::Nodes::StatementList.new a }
           match(:comparison)
-        end
-        
-        rule :return_expression do
-          match("return", :expression) do |_, expression|
-            Dunder::Nodes::ReturnExpression.new expression 
-          end
         end
 
         rule :comparison do
@@ -150,7 +150,6 @@ module Dunder
           match(:identifier) do |name|
             Dunder::Nodes::Variable.new name
           end
-          match(:function_call)
         end
 
         rule :comp_operator do
@@ -192,10 +191,6 @@ module Dunder
           match(".", :digits) { |_, b | Dunder::Nodes::DFloat.new "0" << "." << b }
         end
 
-        rule :non_zero_digit do
-          match(/[1-9]/)
-        end
-
         rule :digits do
           match(:digits, :digit) { |a, b| a << b }
           match(:digit)
@@ -203,10 +198,6 @@ module Dunder
 
         rule :digit do
           match(/[0-9]/)
-        end
-
-        rule :lowercase do
-          match(/[a-z]+/)
         end
 
         rule :string do

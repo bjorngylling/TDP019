@@ -11,5 +11,7 @@ identifier ::= lowercase [ letter | digit | "_" ]* |
 
 end_line_comment ::= [ "//" | "#" ] anything "\n"
 
+multi_line_comment ::= "/*" anything "*/"
+
 string ::= '"' anything except " '"' | "'" anything except ' "'"
 

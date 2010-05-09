@@ -45,7 +45,7 @@ class DunderNodesTest < Test::Unit::TestCase
   end
   
   def node(*params)
-    create_node method_name, *params
+    create_node self.name.split("(").first, *params
   end
 
   def method_missing(name, *args)

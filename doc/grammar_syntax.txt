@@ -1,56 +1,67 @@
-digits ::= digit+
+statement_list ::= [ [statement ] statement_terminator ]+
 
-integer ::= digits
+statement_terminator ::= "\n" | ";"
 
-float ::= [ digits ] . digits
+statement ::= compound_statement |
+              expression | 
+              return_statement
 
-number ::= integer | float
+return_statement ::= "return" expression
+              
+compound_statement ::= if_statement |
+                       while_statement |
+                       function_def
+                       
+block_start ::= "{"
 
-return_stmt ::= "return" expression
+block_end ::= "}"
 
-assignment_expression ::= identifier "=" expression
+if_statement ::= "if" "(" expression ")" block_start statement_list block_end |
+                 "if" "(" expression ")" block_start statement_list block_end 
+                  "else" block_start statement_list block_end
 
-arguments ::= "(" [ [expression , ]* expression ]? ")"
+while_statement ::= "while" "(" expression ")" block_start statement_list block_end
+
+function_def ::= "def" identifier parameters block_start statement_list block_end
+
+parameters ::= "(" parameter_list ")" |
+               "(" ")"
+
+parameter_list ::= [identifier ","]* identifier
 
 function_call ::= identifier arguments
 
-function_def ::= identifier arguments "{" statement_list return_stmt? "}"
+arguments ::= "(" expression_list ")" |
+              "(" ")"
+              
+expression_list ::= [expression ","]* expression
 
 expression ::= assignment_expression |
 				       comparison
 
-comparison ::= a_expr comp_operator a_expr |
-                a_expr
+comparison ::= [a_expr comp_operator]* a_expr
 
-a_expr ::= m_expr |
-           a_expr "+" m_expr |
-           a_expr "-" m_expr
+a_expr ::= [m_expr ["+" | "-"]]* m_expr
 
-m_expr ::= u_expr |
-           m_expr "*" u_expr |
-           m_expr "/" u_expr
+m_expr ::= [u_expr ["*" | "/"]]* u_expr
 
-u_expr ::= primary |
-           "-" primary |
-           "+" primary
+u_expr ::= ["+" | "-"]? primary
 
 primary ::= function_call |
             boolean |
             number |
             string |
             indentifier
+            
+comp_operator ::= "==" | "<=" | ">=" | ">" | "<" | "!="
 
-statement ::= assignment_expression |
-							function_call |
-							if_statement |
-							while_statement |
-							function_def
+assignment_expression ::= identifier "=" expression
 
-statement_terminator ::= "\n" | ";"
+number ::= integer | float
 
-statement_list ::= [ statement statement_terminator ]+
+integer ::= digits
+              
+digits ::= digit+
 
-if_statement ::= "if" "(" expression ")" "{" statement_list "}"
-
-while_statement ::= "while" "(" expression ")" "{" statement_list "}"
+float ::= [ digits ] "." digits
 

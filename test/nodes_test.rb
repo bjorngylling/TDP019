@@ -92,12 +92,12 @@ class DunderNodesTest < Test::Unit::TestCase
     stmt_2 = create_node "addition", int_5, int_5
     stmt_3 = create_node "multiplication", int_5, int_10
 
-    stmt_list_1 = create_node method_name, stmt_1
+    stmt_list_1 = node stmt_1
 
-    stmt_list_1 += node(stmt_2)
+    stmt_list_1 += node stmt_2
     assert_equal 2, stmt_list_1.list.length
 
-    stmt_list_1 += node(stmt_3)
+    stmt_list_1 += node stmt_3
     assert_equal 3, stmt_list_1.list.length
   end
 
