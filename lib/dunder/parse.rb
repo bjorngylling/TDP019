@@ -8,6 +8,10 @@ module Dunder
 
     def initialize
       @dunder_parser = Rdparse::Parser.new("dunder") do
+        # Strings
+        token(/'[^']*'/) { |t| Dunder::Nodes::DString.new t.delete("'") }
+        token(/"[^"]*"/) { |t| Dunder::Nodes::DString.new t.delete('"') }
+        
         # Remove whitespace, except newlines since they are statement_terminators
         token(/[ \t]+/)
 
@@ -201,8 +205,7 @@ module Dunder
         end
 
         rule :string do
-          match("'", /[^']/, "'") { |_, a, _| Dunder::Nodes::DString.new a }
-          match('"', /[^"]/, '"') { |_, a, _| Dunder::Nodes::DString.new a }
+          match(Dunder::Nodes::DString)
         end
 
       end
