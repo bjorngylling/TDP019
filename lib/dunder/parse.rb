@@ -112,7 +112,7 @@ module Dunder
         end
 
         rule :expression do
-          match(:assignment_expression) { |a| StatementList.new a }
+          match(:assignment_expression)
           match(:comparison)
         end
 
@@ -128,7 +128,7 @@ module Dunder
             Addition.new lh, rh
           end
           match(:a_expr, "-", :m_expr) do | lh, _, rh |
-            op = Subtraction.new lh, rh
+            Subtraction.new lh, rh
           end
           match(:m_expr)
         end
@@ -145,7 +145,7 @@ module Dunder
 
         rule :u_expr do
           match("+", :primary)
-          match("-", :primary) { |_, a| a.negative! }
+          match("-", :primary) { |_, a| a.negative }
           match(:primary)
         end
 

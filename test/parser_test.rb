@@ -59,6 +59,7 @@ and here is the last row"
     assert_equal 10, @d_parser.parse("-2*-5").eval
     assert_equal 1, @d_parser.parse("-4+5").eval
     assert_equal -9, @d_parser.parse("-4+-5").eval
+    assert_equal -2.4, @d_parser.parse("-4.5--2.1").eval
   end
 
   def test_zero_fill
