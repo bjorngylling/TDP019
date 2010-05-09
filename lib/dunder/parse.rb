@@ -5,12 +5,15 @@ require "lib/rdparse/rdparse.rb"
 module Dunder
 
   class Parser
+    include Dunder::Nodes
 
     def initialize
       @dunder_parser = Rdparse::Parser.new("dunder") do
+        extend Dunder::Nodes
+        
         # Strings
-        token(/'[^']*'/) { |t| Dunder::Nodes::DString.new t.delete("'") }
-        token(/"[^"]*"/) { |t| Dunder::Nodes::DString.new t.delete('"') }
+        token(/'[^']*'/) { |t| DString.new t.delete("'") }
+        token(/"[^"]*"/) { |t| DString.new t.delete('"') }
         
         # Remove whitespace, except newlines since they are statement_terminators
         token(/[ \t]+/)
@@ -32,14 +35,14 @@ module Dunder
         end
 
         rule :statement do
-          match(:return_statement) { |a| Dunder::Nodes::StatementList.new a }
-          match(:compound_statement) { |a| Dunder::Nodes::StatementList.new a }
-          match(:expression) { |a| Dunder::Nodes::StatementList.new a }
+          match(:return_statement) { |a| StatementList.new a }
+          match(:compound_statement) { |a| StatementList.new a }
+          match(:expression) { |a| StatementList.new a }
         end
         
         rule :return_statement do
           match("return", :expression) do |_, expression|
-            Dunder::Nodes::ReturnExpression.new expression 
+            ReturnExpression.new expression 
           end
         end
 
@@ -61,24 +64,24 @@ module Dunder
           match("if", "(", :expression, ")", :block_start, :statement_list, :block_end,
                 "else", :block_start, :statement_list, :block_end) do
                   |_, _, condition, _, _, stmt_list, _, _, _, else_stmt_list, _|
-                  Dunder::Nodes::IfStatement.new condition, stmt_list, else_stmt_list
+                  IfStatement.new condition, stmt_list, else_stmt_list
           end
           match("if", "(", :expression, ")", :block_start, :statement_list, :block_end) do |_, _, condition, _, _, stmt_list, _|
-            Dunder::Nodes::IfStatement.new condition, stmt_list
+            IfStatement.new condition, stmt_list
           end
         end
 
         rule :while_statement do
           match("while", "(", :expression, ")", :block_start, :statement_list, :block_end) do
             |_, _, condition, _, _, stmt_list, _|
-            Dunder::Nodes::WhileStatement.new condition, stmt_list
+            WhileStatement.new condition, stmt_list
           end
         end
         
         rule :function_def do
           match("def", :identifier, :parameters, :block_start, :statement_list, :block_end) do
             |_, name, parameters, _, stmt_list, _|
-            Dunder::Nodes::FunctionDefinition.new name, parameters, stmt_list.list
+            FunctionDefinition.new name, parameters, stmt_list.list
           end
         end
         
@@ -109,33 +112,33 @@ module Dunder
         end
 
         rule :expression do
-          match(:assignment_expression) { |a| Dunder::Nodes::StatementList.new a }
+          match(:assignment_expression) { |a| StatementList.new a }
           match(:comparison)
         end
 
         rule :comparison do
           match(:a_expr, :comp_operator, :a_expr) do |lh, op, rh|
-            Dunder::Nodes::Comparison.new lh, op, rh
+            Comparison.new lh, op, rh
           end
           match(:a_expr)
         end
 
         rule :a_expr do
           match(:a_expr, "+", :m_expr) do | lh, _, rh |
-            Dunder::Nodes::Addition.new lh, rh
+            Addition.new lh, rh
           end
           match(:a_expr, "-", :m_expr) do | lh, _, rh |
-            op = Dunder::Nodes::Subtraction.new lh, rh
+            op = Subtraction.new lh, rh
           end
           match(:m_expr)
         end
 
         rule :m_expr do
           match(:m_expr, "*", :u_expr) do | lh, _, rh |
-            Dunder::Nodes::Multiplication.new lh, rh
+            Multiplication.new lh, rh
           end
           match(:m_expr, "/", :u_expr) do | lh, _, rh |
-            Dunder::Nodes::Division.new lh, rh
+            Division.new lh, rh
           end
           match(:u_expr) { |a| a }
         end
@@ -152,7 +155,7 @@ module Dunder
           match(:number)
           match(:string)
           match(:identifier) do |name|
-            Dunder::Nodes::Variable.new name
+            Variable.new name
           end
         end
 
@@ -167,7 +170,7 @@ module Dunder
 
         rule :assignment_expression do
           match(:identifier, '=', :expression) do |identifier, _, value|
-            Dunder::Nodes::VariableAssignment.new identifier, value
+            VariableAssignment.new identifier, value
           end
         end
 
@@ -177,8 +180,8 @@ module Dunder
         end
 
         rule :boolean do
-          match('true') { Dunder::Nodes::DBoolean.new true }
-          match('false') { Dunder::Nodes::DBoolean.new false }
+          match('true') { DBoolean.new true }
+          match('false') { DBoolean.new false }
         end
 
         rule :number do
@@ -187,12 +190,12 @@ module Dunder
         end
 
         rule :integer do
-          match(:digits) { |a| Dunder::Nodes::DInteger.new a }
+          match(:digits) { |a| DInteger.new a }
         end
 
         rule :float do
-          match(:digits, ".", :digits) { |a, _, b | Dunder::Nodes::DFloat.new a << "." << b }
-          match(".", :digits) { |_, b | Dunder::Nodes::DFloat.new "0" << "." << b }
+          match(:digits, ".", :digits) { |a, _, b | DFloat.new a << "." << b }
+          match(".", :digits) { |_, b | DFloat.new "0" << "." << b }
         end
 
         rule :digits do
@@ -205,7 +208,7 @@ module Dunder
         end
 
         rule :string do
-          match(Dunder::Nodes::DString)
+          match(DString)
         end
 
       end
