@@ -2,6 +2,12 @@ require 'lib/dunder.rb'
 
 require 'test/unit'
 
+begin
+  require 'rubygems'
+  require 'turn'
+rescue LoadError
+end
+
 
 class Dunder::Nodes::Node
   def self.sub_classes

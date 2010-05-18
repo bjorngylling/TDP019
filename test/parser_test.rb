@@ -303,6 +303,7 @@ and here is the last row"
   end
   
   def test_run_code_from_file
+    dir = $:.unshift File.dirname(__FILE__)
     result = %x[ruby lib/dunder.rb test/fixtures/factorial.dun]
     assert_equal 120, result.chomp.to_i
   end
