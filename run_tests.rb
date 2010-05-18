@@ -1,3 +1,5 @@
+#!/usr/bin/ruby
+
 require 'test/unit'
 
 # Add project test files below

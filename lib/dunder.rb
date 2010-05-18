@@ -1,3 +1,5 @@
+#!/usr/bin/ruby
+
 # Require all files in lib/dunder
 $:.unshift File.dirname(__FILE__)
 Dir["#{File.dirname(__FILE__)}/dunder/*.rb"].each do 
@@ -16,7 +18,7 @@ end
 
 options = {:v => Proc.new { puts read_file_to_string("VERSION") }, 
            :ip => Proc.new { Dunder::Parser.new.interactive_parser }}
-		   
+
 if !ARGV.empty?
   flag = ARGV.first.delete("-").to_sym
   if options.has_key? flag
@@ -24,7 +26,7 @@ if !ARGV.empty?
   else
     evaluate_file ARGV.first
   end
-else
+elsif($0.include? "dunder.rb")
   puts "Dunder help:
   Flags:
     -v  Prints the version
