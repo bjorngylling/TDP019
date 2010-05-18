@@ -52,7 +52,7 @@ module Dunder
         end
         
         rule :print_statement do
-          match("print", :string) do |_, string|
+          match("print", :expression) do |_, string|
             PrintStatement.new string 
           end
         end
@@ -274,6 +274,7 @@ module Dunder
         
         if nested_blocks == 0
           puts parse(code).eval(global_scope)
+          code = ""
         end
       end
     end

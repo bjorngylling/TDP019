@@ -2,11 +2,14 @@ statement_list ::= [ [statement ] statement_terminator ]+
 
 statement_terminator ::= "\n" | ";"
 
-statement ::= compound_statement |
-              expression | 
-              return_statement
+statement ::= return_statement | 
+              print_statement |
+			  			compound_statement |
+              expression              
 
 return_statement ::= "return" expression
+
+print_statement ::= "print" expression
               
 compound_statement ::= if_statement |
                        while_statement |
@@ -16,9 +19,9 @@ block_start ::= "{"
 
 block_end ::= "}"
 
-if_statement ::= "if" "(" expression ")" block_start statement_list block_end |
-                 "if" "(" expression ")" block_start statement_list block_end 
-                  "else" block_start statement_list block_end
+if_statement ::= "if" "(" expression ")" block_start statement_list block_end 
+                 "else" block_start statement_list block_end |
+                 "if" "(" expression ")" block_start statement_list block_end
 
 while_statement ::= "while" "(" expression ")" block_start statement_list block_end
 
