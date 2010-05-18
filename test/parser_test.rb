@@ -307,7 +307,7 @@ and here is the last row"
     assert_equal 120, result.chomp.to_i
   end
   
-  def test_print
+  def test_print_string
     require 'stringio'
 
     # Redirect stdout to output
@@ -326,6 +326,27 @@ and here is the last row"
     $stdout = old_stdout
     
     assert_equal ("Hello world\n" * 5), output.string
+  end
+  
+  def test_print_number
+    require 'stringio'
+
+    # Redirect stdout to output
+    output = StringIO.new
+    old_stdout, $stdout = $stdout, output
+    
+    code = "x = 0
+            while(x < 4) {
+              x = x + 1
+              print 100 - 50
+            }"
+            
+    @d_parser.parse(code).eval
+    
+    # Restore stdout
+    $stdout = old_stdout
+    
+    assert_equal ("50\n" * 4), output.string
   end
   
 end
