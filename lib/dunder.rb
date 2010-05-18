@@ -24,4 +24,11 @@ if !ARGV.empty?
   else
     evaluate_file ARGV.first
   end
+else
+  puts "Dunder help:
+  Flags:
+    -v  Prints the version
+    -ip Starts the interactive parser
+    
+  Pass a file with Dunder-code as the argument and Dunder will run the code in that file."
 end

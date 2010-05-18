@@ -273,7 +273,9 @@ module Dunder
         end
         
         if nested_blocks == 0
-          puts parse(code).eval(global_scope)
+          result = parse(code).eval(global_scope)
+          print "=> "
+          puts result
           code = ""
         end
       end
