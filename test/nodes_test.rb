@@ -1,89 +1,91 @@
+# coding: utf-8
+
 require "test/test_helpers.rb"
 
 class DunderNodesTest < Test::Unit::TestCase
+  
+  def setup
+    @scope = Hash.new
+  end
 
   def test_addition
-    assert_equal 15, node(int_10, int_5).eval
+    assert_equal 15, evaluate(node(int_10, int_5))
   end
 
   def test_subtraction
-    assert_equal 5, node(int_10, int_5).eval
+    assert_equal 5, evaluate(node(int_10, int_5))
   end
 
   def test_multiplication
-    assert_equal 50, node(int_10, int_5).eval
+    assert_equal 50, evaluate(node(int_10, int_5))
   end
 
   def test_division
-    assert_equal 2, node(int_10, int_5).eval
+    assert_equal 2, evaluate(node(int_10, int_5))
   end
 
   def test_advanced_addition
     # Create another Addition Node and use it as the left hand
     sub_addition = node int_5, int_6
 
-    assert_equal 21, node(sub_addition, int_10).eval
+    assert_equal 21, evaluate(node(sub_addition, int_10))
   end
 
   def test_dboolean
-    assert_equal true, node(true).eval
-    assert_equal false, node(false).eval
-    assert_equal false, node(nil).eval
-    assert_equal false, node(int_0).eval
-    assert_equal true, node(int_1).eval
-    assert_equal true, node(create_node("dstring", "Yarrr!")).eval
+    assert_equal true, evaluate(node(true))
+    assert_equal false, evaluate(node(false))
+    assert_equal false, evaluate(node(nil))
   end
 
   def test_comparison
-    assert_equal true, node(int_10, "==", int_10).eval
-    assert_equal false, node(int_10, "==", int_5).eval
-    assert_equal true, node(int_10, "!=", int_5).eval
-    assert_equal false, node(int_5, "!=", int_5).eval
+    assert_equal true, evaluate(node(int_10, "==", int_10))
+    assert_equal false, evaluate(node(int_10, "==", int_5))
+    assert_equal true, evaluate(node(int_10, "!=", int_5))
+    assert_equal false, evaluate(node(int_5, "!=", int_5))
   end
 
   def test_ifstatement
     stmt_list = create_node("statementlist", create_node("addition", int_5, int_5))
     condition = create_node("dboolean", true)
 
-    assert_equal 10, node(condition, stmt_list).eval
+    assert_equal 10, evaluate(node(condition, stmt_list))
   end
 
   def test_variableassignment
-    scope = {} # Empty variable scope to store our test-variable
-
     # Make the assignment
-    node("myVar", int_10).eval(scope)
+    evaluate(node("myVar", int_10))
 
-    assert_equal 10, scope[:myVar]
+    assert_equal 10, @scope[:myVar]
   end
 
   def test_scope_variableassignment
     global_scope = {:another_variable => "yes"}
-    scope = {"PARENTSCOPE" => global_scope} # Empty variable scope to store our test-variable
+    @scope["PARENTSCOPE"] = global_scope # Empty variable scope to store our test-variable
 
     # Make the assignment
-    node("myVar", int_10).eval(scope)
-    assert_equal 10, scope[:myVar]
+    evaluate(node("myVar", int_10))
+    assert_equal 10, @scope[:myVar]
     assert_nil global_scope[:myVar] # Should not pollute parent-scope
 
     # This time it should find "another_variable" in the parent-scope and overwrite it
-    node("another_variable", int_5).eval(scope)
+    evaluate(node("another_variable", int_5))
     assert_equal 5, global_scope[:another_variable]
-    assert_nil scope[:another_variable] # Should not pollute other scopes
+    assert_nil @scope[:another_variable] # Should not pollute local scope
   end
 
   def test_variable
-    scope = {:myVar => "hej"}
+    @scope[:myVar] = "hej"
 
-    assert_equal "hej", node("myVar").eval(scope)
+    assert_equal "hej", evaluate(node("myVar"))
   end
 
   def test_scope_variable
     global_scope = {:another_variable => "yes", :myVar => "goodbye"}
-    scope = {"PARENTSCOPE" => global_scope, :myVar => "hej"}
+    @scope["PARENTSCOPE"] = global_scope
+    @scope[:myVar] = "hej"
 
-    assert_equal "hej", node("myVar").eval(scope)
-    assert_equal "yes", node("another_variable").eval(scope)
+    assert_equal "hej", evaluate(node("myVar"))
+    assert_equal "yes", evaluate(node("another_variable"))
   end
 
   def test_statementlist
@@ -111,9 +113,9 @@ class DunderNodesTest < Test::Unit::TestCase
     stmt_list << create_node("multiplication", int_5, int_10)
 
     function = create_node("functiondefinition", "foo", ["a", "b", "c"], stmt_list)
-    function.eval(global_scope)
+    evaluate function 
 
-    assert_equal 50, node("foo", [12, 1, 3]).eval(global_scope)
+    assert_equal 50, evaluate(node("foo", [int_12, int_1, int_3]))
   end
 
 end

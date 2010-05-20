@@ -1,4 +1,5 @@
 #!/usr/bin/ruby
+# coding: utf-8
 
 # Require all files in lib/dunder
 $:.unshift File.dirname(__FILE__)

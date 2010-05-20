@@ -1,7 +1,9 @@
+# coding: utf-8
+
 module Dunder
   module Helpers
 
-    def self.look_up(name, scope)
+    def look_up(name, scope)
       if scope.include?(name)
           return scope[name]
         else
@@ -17,16 +19,24 @@ module Dunder
         end
     end
 
-    def self.assign(scope, name, value)
+    def assign(scope, name, value)
+      scope[name] = value unless scope_assignement(scope, name, value)
+    end
+    
+    def scope_assignement(scope, name, value)
       if scope.has_key? name
         scope[name] = value
         return true
       elsif scope.has_key? "PARENTSCOPE"
         # Check the variable exists in parent-scope, if it does we update it
-        return assign(scope["PARENTSCOPE"], name, value)
+        return scope_assignement(scope["PARENTSCOPE"], name, value)
       else
         return false
       end
+    end
+    
+    def build_frame(parameters, arguments)
+      Hash[*parameters.zip(arguments).flatten]
     end
 
   end

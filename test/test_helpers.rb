@@ -1,3 +1,6 @@
+# coding: utf-8
+
+
 require 'lib/dunder.rb'
 
 require 'test/unit'
@@ -8,6 +11,27 @@ begin
 rescue LoadError
 end
 
+class DunderParserTest < Test::Unit::TestCase
+  
+  def run_output_test(code)
+    # Redirect stdout to output
+    output = StringIO.new
+    old_stdout, $stdout = $stdout, output
+            
+    @d_parser.parse(code).eval(@global_scope)
+    
+    # Restore stdout
+    $stdout = old_stdout
+    
+    output.string
+  end
+  
+  def parse(code)
+    @d_parser.parse(code).eval(@global_scope)
+  end
+  
+end
+  
 
 class Dunder::Nodes::Node
   def self.sub_classes
@@ -20,6 +44,10 @@ end
 
 
 class DunderNodesTest < Test::Unit::TestCase
+  
+  def evaluate(node)
+    node.eval(@scope)
+  end
   
   ## CREATE_NODE
   #

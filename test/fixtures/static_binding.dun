@@ -1,0 +1,12 @@
+var = 10
+
+def foo(x) {
+  var = x
+  bar()
+}
+
+def bar() {
+  print var
+}
+
+foo(5)

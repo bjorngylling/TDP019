@@ -1,3 +1,5 @@
+# coding: utf-8
+
 # Dunder language parser
 
 require "lib/rdparse/rdparse.rb"
@@ -170,7 +172,7 @@ module Dunder
 
         rule :u_expr do
           match("+", :primary)
-          match("-", :primary) { |_, a| a.negative! }
+          match("-", :primary) { |_, a| a.negative }
           match(:primary)
         end
 

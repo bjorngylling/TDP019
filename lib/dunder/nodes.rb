@@ -1,11 +1,10 @@
+# coding: utf-8
+
 module Dunder
   module Nodes
 
     class Node
-      
-      def is_node?
-        true
-      end
+      include Dunder::Helpers
 
       def global_scope
         @global_scope ||= Hash.new
@@ -31,7 +30,7 @@ module Dunder
         @statement_list
       end
 
-      def eval(scope = global_scope)
+      def eval(scope)
         result = nil
         @statement_list.each do |stmt|
           result = stmt.eval(scope)
@@ -46,7 +45,7 @@ module Dunder
         @value = value
       end
 
-      def eval(scope = global_scope)
+      def eval(scope)
         @value
       end
     end
@@ -56,12 +55,12 @@ module Dunder
         @value = value.to_i
       end
 
-      def eval(scope = global_scope)
+      def eval(scope)
         @value
       end
 
-      def negative!
-        @value = -@value
+      def negative
+        self.class.new -@value
       end
     end
 
@@ -70,18 +69,18 @@ module Dunder
         @value = value.to_f
       end
 
-      def eval(scope = global_scope)
+      def eval(scope)
         @value
       end
 
-      def negative!
-        @value = -@value
+      def negative
+        self.class.new -@value
       end
     end
 
     class DBoolean < Node
       def initialize(value)
-        value = value.eval if value.is_node?
+        #value = value.eval
 
         if value == nil || value == 0 || value == false
           @value = false
@@ -90,7 +89,7 @@ module Dunder
         end
       end
 
-      def eval(scope = global_scope)
+      def eval(scope = Hash.new)
         @value
       end
     end
@@ -100,9 +99,8 @@ module Dunder
         @lh, @rh = lh, rh
       end
 
-      def eval(scope = global_scope)
-        (@lh.is_node? ? @lh.eval(scope) : @lh) + 
-        (@rh.is_node? ? @rh.eval(scope) : @rh)
+      def eval(scope)
+        @lh.eval(scope) + @rh.eval(scope)
       end
     end
 
@@ -111,9 +109,8 @@ module Dunder
         @lh, @rh = lh, rh
       end
 
-      def eval(scope = global_scope)
-        (@lh.is_node? ? @lh.eval(scope) : @lh) - 
-        (@rh.is_node? ? @rh.eval(scope) : @rh)
+      def eval(scope)
+        @lh.eval(scope) - @rh.eval(scope)
       end
     end
 
@@ -122,9 +119,8 @@ module Dunder
         @lh, @rh = lh, rh
       end
 
-      def eval(scope = global_scope)
-        (@lh.is_node? ? @lh.eval(scope) : @lh) * 
-        (@rh.is_node? ? @rh.eval(scope) : @rh)
+      def eval(scope)
+        @lh.eval(scope) * @rh.eval(scope)
       end
     end
 
@@ -133,9 +129,8 @@ module Dunder
         @lh, @rh = lh, rh
       end
 
-      def eval(scope = global_scope)
-        (@lh.is_node? ? @lh.eval(scope) : @lh) / 
-        (@rh.is_node? ? @rh.eval(scope) : @rh)
+      def eval(scope)
+        @lh.eval(scope) / @rh.eval(scope)
       end
     end
 
@@ -144,9 +139,9 @@ module Dunder
         @lh, @rh, @op = lh, rh, op
       end
 
-      def eval(scope = global_scope)
-        lh = @lh.eval(scope) || @lh
-        rh = @rh.eval(scope) || @rh
+      def eval(scope)
+        lh = @lh.eval(scope)
+        rh = @rh.eval(scope)
 
         lh = "'#{lh}'" if lh.kind_of? String
         rh = "'#{rh}'" if rh.kind_of? String
@@ -162,7 +157,7 @@ module Dunder
         @else_stmt_list = else_stmt_list
       end
 
-      def eval(scope = global_scope)
+      def eval(scope)
         if @condition.eval(scope)
           @stmt_list.eval(scope)
         elsif @else_stmt_list
@@ -176,7 +171,7 @@ module Dunder
         @condition, @stmt_list = condition, stmt_list
       end
 
-      def eval(scope = global_scope)
+      def eval(scope)
         while_scope = {"PARENTSCOPE" => scope}
         while @condition.eval(while_scope) do
           @stmt_list.eval(while_scope)
@@ -190,10 +185,10 @@ module Dunder
         @node = node
       end
 
-      def eval(scope = global_scope)
-        value = @node.is_node? ? @node.eval(scope) : @node
+      def eval(scope)
+        value = @node.eval(scope)
 
-        scope[@name] = value unless Helpers::assign(scope, @name, value)
+        assign(scope, @name, value)
 
         return value
       end
@@ -207,8 +202,8 @@ module Dunder
         @name = name.to_sym
       end
 
-      def eval(scope = global_scope)
-        return Helpers::look_up(@name, scope)
+      def eval(scope)
+        return look_up(@name, scope)
       end
     end
     
@@ -217,7 +212,7 @@ module Dunder
         @string = expression
       end
 
-      def eval(scope = global_scope)
+      def eval(scope)
         puts @string.eval(scope)
       end
     end
@@ -227,22 +222,23 @@ module Dunder
         @expression = expression
       end
 
-      def eval(scope = global_scope)
+      def eval(scope)
         @expression.eval(scope)
       end
     end
 
     class FunctionDefinition < Node
-      attr_reader :params, :stmt_list
+      attr_reader :params, :stmt_list, :scope
 
       def initialize(name, params, stmt_list)
         @name = name.to_sym
-        @params = params
+        @params = params.map { |param| param.to_sym }
         @stmt_list = stmt_list
       end
 
-      def eval(scope = global_scope)
-        scope[@name] = self unless Dunder::Helpers::assign(scope, @name, self)
+      def eval(scope)
+        @scope = scope
+        assign(scope, @name, self)
 
         return self
       end
@@ -256,11 +252,11 @@ module Dunder
         @arguments = args
       end
 
-      def eval(scope = global_scope)
+      def eval(scope)
         # Find function definition in scopes
-        function_definition = Dunder::Helpers::look_up(@name, scope)
+        function_definition = look_up(@name, scope)
         
-        params = function_definition.params.map { |param| param.to_sym }
+        params = function_definition.params
         
         if params.length != @arguments.length
           return "Function #{@name.to_s} called with invalid number of \
@@ -269,9 +265,9 @@ arguments. (#{@arguments.length} for #{params.length})"
         
         # Give our parameters value from the argument-array and create 
         # a scope from that.
-        evaluated_arguments = @arguments.map {|a| a.eval(scope) if a.is_node?}
-        function_scope = Hash[*params.zip(evaluated_arguments).flatten]
-        function_scope["OUTSIDE_FUNCTION_DEF"] = scope
+        evaluated_arguments = @arguments.map { |a| a.eval(scope) }
+        function_scope = build_frame(params, evaluated_arguments)
+        function_scope["OUTSIDE_FUNCTION_DEF"] = function_definition.scope
         
         result = nil
 
