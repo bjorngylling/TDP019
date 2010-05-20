@@ -11,5 +11,15 @@ Dunder is written in Ruby so to use Dunder you will need a working installation 
 
 	age = 10
 	if(age < 21) {
-		print("Hello kid!")
+	  print "Hello kid!"
+	}
+
+A recursive function to calculate a number in the Fibonacci sequence
+
+	def fib(n) {
+	  if (n <= 1) {
+	    return n
+	  } else {
+	    return fib(n-1)+fib(n-2)
+	  }
 	}
