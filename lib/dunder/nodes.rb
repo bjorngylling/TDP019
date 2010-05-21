@@ -2,14 +2,10 @@
 
 module Dunder
   module Nodes
+    @return = nil
 
     class Node
       include Dunder::Helpers
-
-      def global_scope
-        @global_scope ||= Hash.new
-        @global_scope
-      end
 
     end
 
@@ -32,8 +28,18 @@ module Dunder
 
       def eval(scope)
         result = nil
-        @statement_list.each do |stmt|
-          result = stmt.eval(scope)
+        @statement_list.each do |statement|
+          
+          result = statement.eval(scope)
+          
+          if statement.kind_of? Dunder::Nodes::ReturnStatement
+            result = statement
+            break
+          end
+          if result.kind_of? Dunder::Nodes::ReturnStatement
+            break
+          end
+          
         end
 
         return result
@@ -80,8 +86,6 @@ module Dunder
 
     class DBoolean < Node
       def initialize(value)
-        #value = value.eval
-
         if value == nil || value == 0 || value == false
           @value = false
         else
@@ -173,9 +177,12 @@ module Dunder
 
       def eval(scope)
         while_scope = {"PARENTSCOPE" => scope}
-        while @condition.eval(while_scope) do
-          @stmt_list.eval(while_scope)
+        result = nil
+        while @condition.eval(while_scope) and result.class != ReturnStatement do
+          result = @stmt_list.eval(while_scope)
         end
+        
+        result
       end
     end
 
@@ -196,8 +203,6 @@ module Dunder
     end
 
     class Variable < Node
-      attr_accessor :name, :scope
-
       def initialize(name)
         @name = name.to_sym
       end
@@ -218,12 +223,14 @@ module Dunder
     end
 
     class ReturnStatement < Node
+      attr_reader :value
+      
       def initialize(expression)
         @expression = expression
       end
 
       def eval(scope)
-        @expression.eval(scope)
+        @value = @expression.eval(scope)
       end
     end
 
@@ -272,12 +279,17 @@ arguments. (#{@arguments.length} for #{params.length})"
         result = nil
 
         function_definition.stmt_list.each do |statement|
+          
+          result = statement.eval(function_scope)
+          
           if statement.kind_of? Dunder::Nodes::ReturnStatement
-            result = statement.eval(function_scope)
+            result = statement.value
+            break
+          elsif result.kind_of? Dunder::Nodes::ReturnStatement
+            result = result.value
             break
           end
-
-          result = statement.eval(function_scope)
+          
         end
 
         result

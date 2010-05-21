@@ -258,7 +258,6 @@ and here is the last row"
              // Ugly formatting to make sure that works too
              return 12
              13 }")
-    
     assert_equal 12, parse("foo(10)")
     
     parse("def foo(x) { 
@@ -266,8 +265,28 @@ and here is the last row"
              return x + 5
              13
            }")
-    
     assert_equal 25, parse("foo(10)")
+    
+    parse("def foo(x) { 
+             x = x + 10
+             if(x > 2) {
+               return x
+             }
+             13
+           }")
+    assert_equal 20, parse("foo(10)")
+    
+    parse("def foo(y) { 
+             z = 0
+             while(z < 20) {
+               if(z == y) {
+                 return z * 10
+               }
+               z = z + 1
+             }
+             return 42
+           }")
+    assert_equal 100, parse("foo(10)")
   end
   
   def test_recursive_functions
