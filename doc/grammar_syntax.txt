@@ -27,6 +27,8 @@ while_statement ::= "while" "(" expression ")" block_start statement_list block_
 
 function_def ::= "def" identifier parameters block_start statement_list block_end
 
+lambda_function ::= block_start "|" parameter_list? "|" statement_list block_end
+
 parameters ::= "(" parameter_list ")" |
                "(" ")"
 
@@ -40,7 +42,8 @@ arguments ::= "(" expression_list ")" |
 expression_list ::= [expression ","]* expression
 
 expression ::= assignment_expression |
-				       comparison
+				       comparison |
+				       lambda_function
 
 comparison ::= [a_expr comp_operator]* a_expr
 

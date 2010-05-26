@@ -238,14 +238,21 @@ module Dunder
       attr_reader :params, :stmt_list, :scope
 
       def initialize(name, params, stmt_list)
-        @name = name.to_sym
+        if name
+          @name = name.to_sym
+        else
+          @name = nil
+        end
+        
         @params = params.map { |param| param.to_sym }
         @stmt_list = stmt_list
       end
 
       def eval(scope)
         @scope = scope
-        assign(scope, @name, self)
+        if @name
+          assign(scope, @name, self)
+        end
 
         return self
       end

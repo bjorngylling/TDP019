@@ -290,7 +290,6 @@ and here is the last row"
   end
   
   def test_recursive_functions
-    
     code = "def foo(x) { 
               if(x >= 100) { 
                 return x 
@@ -314,6 +313,13 @@ and here is the last row"
     parse(code)
     
     assert_equal 8, parse("fib(6)")
+  end
+  
+  def test_lambda_functions
+    code = "foo = { |var| var = var + 10 }
+            foo(22)"
+            
+    assert_equal 32, parse(code)
   end
   
   def test_run_code_from_file
@@ -346,6 +352,9 @@ and here is the last row"
     dir = $:.unshift File.dirname(__FILE__)
     result = %x[ruby lib/dunder.rb test/fixtures/static_binding.dun]
     assert_equal 10, result.chomp.to_i
+    
+    result = %x[ruby lib/dunder.rb test/fixtures/static_binding_with_lambda.dun]
+    assert_equal 15, result.chomp.to_i
   end
   
 end

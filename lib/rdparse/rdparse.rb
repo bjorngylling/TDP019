@@ -174,7 +174,7 @@ module Rdparse
       result = @start.parse
       # If there are unparsed extra tokens, signal error
       if @pos != @tokens.size
-        raise ParseError, "Parse error. expected: '#{@expected.join(', ')}', found '#{@tokens[@max_pos]}'"
+        raise ParseError, "Parse error. expected: '#{@expected.join(', ')}', found '#{@tokens[@max_pos]}'\n"
       end
       return result
     end

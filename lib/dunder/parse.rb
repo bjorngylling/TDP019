@@ -24,7 +24,7 @@ module Dunder
         # Statment terminators
         token(/[\r\n;]/) { |t| t }
 
-        token(/\w+|==|<=|>=|!=|\+|-|\*|<|>|\/|=|\{|\}|\(|\)|\.|,/) { |t| t }
+        token(/\w+|==|<=|>=|!=|\+|-|\*|<|>|\/|=|\{|\}|\(|\)|\.|\||,/) { |t| t }
 
         start :statement_list do
           match(:statement, :statement_terminator, :statement_list) do 
@@ -106,6 +106,17 @@ module Dunder
           end
         end
         
+        rule :lambda_function do
+          match(:block_start, '|', :parameter_list, '|', :statement_list, :block_end) do
+            |_, _, parameters, _, stmt_list, _|
+            FunctionDefinition.new nil, parameters, stmt_list.list
+          end
+          match(:block_start, '|', '|', :statement_list, :block_end) do
+            |_, _, _, stmt_list, _|
+            FunctionDefinition.new nil, [], stmt_list.list
+          end
+        end
+        
         rule :parameters do
           match('(', :parameter_list, ')') { |_, list, _| list}
           match('(', ')') { |_, _| [] }
@@ -141,6 +152,7 @@ module Dunder
         rule :expression do
           match(:assignment_expression)
           match(:comparison)
+          match(:lambda_function)
         end
 
         rule :comparison do
@@ -290,10 +302,11 @@ module Dunder
     end
     
     def remove_unwanted_newlines_in(string)
-      string.gsub! /;[ |\t]*\n/, "\n"
-      string.gsub! /^[ |\t]*\n/, ""
-      string.gsub! /\{[ |\t]*\n/, "{"
-      string.gsub /\}[ |\t]*\n[ |\t]*else/, "} else"
+      string.gsub! /;[ \t]*\n/, "\n"
+      string.gsub! /^[ \t]*\n/, ""
+      string.gsub! /\{[ \t]*\n/, "{"
+      string.gsub! /\|\n/, "|"
+      string.gsub /\}[ \t]*\n[ |\t]*else/, "} else"
     end
 
     def log(state = true)
