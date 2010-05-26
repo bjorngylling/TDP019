@@ -1,5 +1,12 @@
 # coding: utf-8
 
+####
+# nodes.rb
+# http://github.com/bjorngylling/TDP019
+# Part of the Dunder language project by Björn Gylling and Linus Karlsson
+# This file contains all the nodes used to build the parse-tree and
+# evaluate it.
+
 module Dunder
   module Nodes
     @return = nil

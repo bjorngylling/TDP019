@@ -1,5 +1,11 @@
 # coding: utf-8
 
+####
+# nodes_test.rb
+# http://github.com/bjorngylling/TDP019
+# Part of the Dunder language project by Björn Gylling and Linus Karlsson
+# This file contains test-cases testing the nodes
+
 require "test/test_helpers.rb"
 
 class DunderNodesTest < Test::Unit::TestCase

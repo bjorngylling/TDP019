@@ -1,5 +1,11 @@
 # coding: utf-8
 
+####
+# helpers.rb
+# http://github.com/bjorngylling/TDP019
+# Part of the Dunder language project by Björn Gylling and Linus Karlsson
+# This file contains helper-methods for the nodes
+
 module Dunder
   module Helpers
 

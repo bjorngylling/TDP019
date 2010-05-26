@@ -1,6 +1,13 @@
 #!/usr/bin/ruby
 # coding: utf-8
 
+####
+# dunder.rb
+# http://github.com/bjorngylling/TDP019
+# Part of the Dunder language project by Björn Gylling and Linus Karlsson
+# This file is the "entrypoint" for the end-user. It can either start the
+# interactive parser or parse code from a file. Runs from a commandline.
+
 # Require all files in lib/dunder
 $:.unshift File.dirname(__FILE__)
 Dir["#{File.dirname(__FILE__)}/dunder/*.rb"].each do 

@@ -1,6 +1,12 @@
 # coding: utf-8
 
-# Dunder language parser
+####
+# parse.rb
+# http://github.com/bjorngylling/TDP019
+# Part of the Dunder language project by Björn Gylling and Linus Karlsson
+# This file contains the parse-rules for the rdparser. It also contains
+# the code that runs the interactive parser. This parser builds a parse-tree
+# of nodes.
 
 require "lib/rdparse/rdparse.rb"
 

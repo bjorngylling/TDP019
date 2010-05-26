@@ -1,5 +1,11 @@
 # coding: utf-8
 
+####
+# parser_test.rb
+# http://github.com/bjorngylling/TDP019
+# Part of the Dunder language project by Björn Gylling and Linus Karlsson
+# This file contains test-cases the language
+
 require "test/test_helpers.rb"
 
 require "stringio"
